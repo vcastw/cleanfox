@@ -1,0 +1,24 @@
+Empacota distribution/policies.json dentro da instalação, em todas as plataformas
+desktop (no macOS vai para Contents/Resources/distribution). O arquivo é copiado de
+settings/policies.json por scripts/prepare.sh.
+
+--- a/browser/app/distribution/moz.build
++++ b/browser/app/distribution/moz.build
+@@ -8,3 +8,8 @@
+     FINAL_TARGET_FILES.distribution += [
+         "distribution.ini",
+     ]
++
++# CleanFox: políticas embutidas na instalação (copiado por scripts/prepare.sh).
++FINAL_TARGET_FILES.distribution += [
++    "policies.json",
++]
+--- a/browser/installer/package-manifest.in
++++ b/browser/installer/package-manifest.in
+@@ -465,3 +465,6 @@
+ #if defined(BUILT_BY_MOZILLA)
+ @RESPATH@/distribution/*
+ #endif
++
++; CleanFox: políticas embutidas na instalação.
++@RESPATH@/distribution/policies.json

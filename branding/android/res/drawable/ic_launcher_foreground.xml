@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gerado por tools/gen-branding.py -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+  <path android:fillColor="#FFFFFF" android:pathData="M33.60,32.40 L48.00,44.40 L60.00,44.40 L74.40,32.40 L73.20,56.40 L54.00,76.80 L34.80,56.40 Z" />
+  <path android:fillColor="#0F766E" android:pathData="M42.00,54.00 L49.20,56.40 L43.80,60.00 Z" />
+  <path android:fillColor="#0F766E" android:pathData="M66.00,54.00 L58.80,56.40 L64.20,60.00 Z" />
+  <path android:fillColor="#0F766E" android:pathData="M50.40,69.60 L57.60,69.60 L54.00,76.80 Z" />
+</vector>

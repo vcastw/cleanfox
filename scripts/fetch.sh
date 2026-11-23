@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Baixa o código-fonte oficial do Firefox ESR, confere o SHA-512 e extrai em build/src.
+# Baixa o código-fonte oficial do Firefox (ESR no desktop, estável no Android), confere o SHA-512 e extrai em build/src.
 # shellcheck source=scripts/common.sh
 source "$(dirname "$0")/common.sh"
-need curl tar xz sha512sum
+need curl tar xz
 
 VERSION="$(resolve_version)"
 TARBALL="firefox-$VERSION.source.tar.xz"
@@ -19,7 +19,7 @@ log "Conferindo SHA-512"
 curl -fsSL -o SHA512SUMS "$ARCHIVE/$VERSION/SHA512SUMS"
 expected="$(awk -v f="source/$TARBALL" '$2 == f { print $1 }' SHA512SUMS)"
 [ -n "$expected" ] || die "$TARBALL não consta no SHA512SUMS"
-actual="$(sha512sum "$TARBALL" | cut -d' ' -f1)"
+actual="$(sha 512 "$TARBALL")"
 [ "$expected" = "$actual" ] || die "SHA-512 não confere para $TARBALL (apague o arquivo e baixe de novo)"
 
 # Assinatura GPG da Mozilla sobre o SHA512SUMS. Só é conferida se a chave de release
@@ -36,5 +36,5 @@ log "Extraindo em $SRC_DIR"
 rm -rf "$SRC_DIR"
 mkdir -p "$SRC_DIR"
 tar -xJf "$TARBALL" -C "$SRC_DIR" --strip-components=1
-printf '%s\n' "$VERSION" > "$BUILD_DIR/.version"
+printf '%s\n' "$VERSION" > "$SRC_DIR/.cleanfox-version"
 log "Fonte do Firefox $VERSION pronta"

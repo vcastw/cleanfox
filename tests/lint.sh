@@ -4,19 +4,22 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 echo "== policies.json é JSON válido"
-jq -e '.policies | type == "object"' settings/distribution/policies.json >/dev/null
+jq -e '.policies | type == "object"' settings/policies.json >/dev/null
 
-echo "== cleanfox.cfg: sintaxe JS e prefs duplicadas"
-tmp="$(mktemp --suffix=.js)"; trap 'rm -f "$tmp"' EXIT
-cp settings/cleanfox.cfg "$tmp"
-node --check "$tmp"
-dups="$(grep -oE '^(lock|default)?[pP]ref\("[^"]+"' settings/cleanfox.cfg | cut -d'"' -f2 | sort | uniq -d)"
+echo "== cleanfox.js: formato das prefs e duplicadas"
+# Só comentários //, linhas vazias e pref("nome", literal[, locked]); — é o que o
+# pré-processador de prefs do Firefox aceita sem surpresas.
+bad="$(grep -vE '^(//.*)?$' settings/cleanfox.js \
+  | grep -vE '^pref\("[A-Za-z0-9_.-]+", ("[^"]*"|true|false|-?[0-9]+)(, locked)?\);$' || true)"
+[ -z "$bad" ] || { echo "linhas fora do formato:"; echo "$bad"; exit 1; }
+dups="$(grep -oE '^pref\("[^"]+"' settings/cleanfox.js | cut -d'"' -f2 | sort | uniq -d)"
 [ -z "$dups" ] || { echo "prefs duplicadas:"; echo "$dups"; exit 1; }
 
-echo "== cleanfox.cfg: só lockPref/defaultPref com literais"
-bad="$(grep -vE '^\s*(//.*)?$' settings/cleanfox.cfg \
-  | grep -vE '^(lockPref|defaultPref)\("[A-Za-z0-9_.-]+", ("[^"]*"|true|false|-?[0-9]+)\);$' || true)"
-[ -z "$bad" ] || { echo "linhas fora do formato:"; echo "$bad"; exit 1; }
+echo "== patches: cabeçalhos de diff presentes"
+for p in patches/*.patch patches/android/*.patch; do
+  [ -e "$p" ] || continue
+  if ! grep -q '^--- a/' "$p" || ! grep -q '^+++ b/' "$p"; then echo "patch malformado: $p"; exit 1; fi
+done
 
 echo "== mozconfig: sintaxe shell"
 bash -n mozconfig

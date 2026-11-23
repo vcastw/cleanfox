@@ -3,6 +3,9 @@ name: CI
 on:
   push:
   pull_request:
+  schedule:
+    # Semanal: avisa quando uma versão nova do Firefox quebra os patches ou a configuração.
+    - cron: "17 5 * * 1"
 
 permissions:
   contents: read
@@ -28,3 +31,17 @@ jobs:
           tar -xf firefox.tar.xz
       - run: scripts/apply-config.sh firefox
       - run: tests/check-runtime.py firefox/firefox
+
+  # Baixa o código-fonte atual e confere que branding, prefs, patches e os ajustes do
+  # Android ainda se aplicam (sem compilar).
+  prepare:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [linux, android]
+    env:
+      CLEANFOX_TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: make fetch prepare

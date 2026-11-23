@@ -3,24 +3,35 @@
 Fork do Firefox focado em **leveza, desempenho e minimalismo, com segurança em primeiro lugar** —
 sem telemetria e sem serviços de big techs ligados por padrão.
 
-> **Estado do projeto:** inicial. A configuração (prefs e políticas) é testada automaticamente
-> contra o Firefox ESR real. A compilação completa do binário CleanFox ainda **não foi validada
-> de ponta a ponta** — veja [Estado e roadmap](#estado-e-roadmap).
+> **Estado do projeto:** inicial. Não há binários publicados ainda. A configuração é testada
+> automaticamente num Firefox real; a compilação de cada plataforma está em estágios
+> diferentes de validação — veja [Plataformas](#plataformas).
+
+## Plataformas
+
+| Plataforma | Base | Pacote gerado | Estado |
+|---|---|---|---|
+| Linux x86_64 | Firefox ESR | `.tar.xz` | Preparação validada; compilação em validação |
+| Windows x86_64 | Firefox ESR | `.zip` + instalador `.exe` | Scripts e CI escritos, **nunca compilado** |
+| macOS (Apple Silicon) | Firefox ESR | `.dmg` | Scripts e CI escritos, **nunca compilado** |
+| Android (arm64) | Firefox estável (não existe ESR para Android) | `.apk` | Preparação validada, **nunca compilado**; debranding incompleto |
+
+Em **qualquer desktop** dá para usar hoje a configuração do CleanFox sobre um Firefox já
+instalado — veja [Usar só a configuração](#usar-só-a-configuração-num-firefox-já-instalado).
 
 ## Como funciona
 
 O CleanFox não copia o código do Firefox para este repositório. Como LibreWolf e Mullvad Browser,
-ele é um conjunto pequeno e auditável de arquivos aplicado sobre o código-fonte oficial do
-**Firefox ESR** (ciclo longo, só correções de segurança):
+ele é um conjunto pequeno e auditável de arquivos aplicado sobre o código-fonte oficial:
 
 | Caminho | O que é |
 |---|---|
-| `version` | Versão do Firefox ESR usada como base (`esr-latest` ou fixa, ex. `153.7.0esr`) |
-| `mozconfig` | Opções de compilação |
-| `settings/cleanfox.cfg` | Prefs padrão/travadas, cada uma com o motivo |
-| `settings/distribution/policies.json` | Políticas (buscador, uBlock Origin, IA, mensagens) |
-| `branding/` | Nome e identidade (sem marcas da Mozilla) |
-| `patches/` | Alterações no código-fonte (último recurso; hoje vazio) |
+| `version`, `version-android` | Versão base do Firefox (`esr-latest` / `release-latest`, ou uma versão fixa) |
+| `mozconfig` | Opções de compilação de todas as plataformas |
+| `settings/cleanfox.js` | Prefs padrão/travadas, cada uma com o motivo |
+| `settings/policies.json` | Políticas do desktop (buscador, uBlock Origin, IA, mensagens) |
+| `branding/` | Nome, ícones e wordmarks (gerados por `tools/gen-branding.py`) |
+| `patches/` | Alterações no código-fonte (último recurso) |
 | `scripts/` | Baixar fonte, preparar, compilar, empacotar |
 | `tests/` | Lint estático e teste de runtime num navegador real |
 
@@ -79,48 +90,87 @@ Transparência em vez de promessa de "zero conexões":
 
 ## Usar só a configuração, num Firefox já instalado
 
-Forma mais rápida (e hoje a recomendada) de ter o comportamento do CleanFox, mantendo as
-atualizações de segurança oficiais:
+Forma mais rápida (e hoje a recomendada) de ter o comportamento do CleanFox no desktop,
+mantendo as atualizações de segurança oficiais da Mozilla:
 
 ```bash
-scripts/apply-config.sh /caminho/da/instalacao/do/firefox
+scripts/apply-config.sh /usr/lib/firefox                      # Linux
+scripts/apply-config.sh /Applications/Firefox.app             # macOS
+scripts/apply-config.sh "/c/Program Files/Mozilla Firefox"    # Windows (Git Bash, como administrador)
 ```
+
+Isso copia dois arquivos para a instalação: `browser/defaults/preferences/cleanfox.js` e
+`distribution/policies.json`. Para desfazer, apague-os. Atualizações do Firefox podem removê-los.
 
 ## Compilar
 
-Requisitos: Linux x86_64, ~40 GB de disco, 16 GB de RAM, Python 3, `curl`, `jq`, `patch`.
+Cada plataforma desktop é compilada no próprio sistema; o Android compila em Linux ou macOS.
+Requisitos: ~40 GB de disco, 16 GB de RAM, Python 3, `curl`, `patch`, `make`
+(no Windows, tudo dentro do shell do [MozillaBuild](https://wiki.mozilla.org/MozillaBuild)).
 
 ```bash
-make fetch      # baixa o fonte do Firefox ESR e confere o SHA-512
-make prepare    # aplica branding, patches e mozconfig
-make build      # mach bootstrap + build + package (1h a várias horas)
-make package    # injeta a configuração e gera dist/cleanfox-<versão>-linux-x86_64.tar.xz
+make fetch      # baixa o fonte do Firefox e confere o SHA-512
+make prepare    # aplica branding, prefs, políticas, patches e mozconfig
+make build      # mach bootstrap + build + empacotamento (1h a várias horas)
+make package    # recolhe os pacotes em dist/ com SHA-256
 ```
 
+Para Android, acrescente `TARGET=android` a cada comando (`make TARGET=android fetch` ...).
+
 Variáveis: `CLEANFOX_FAST_BUILD=1` (sem LTO, menos RAM), `CLEANFOX_PGO=1` (PGO),
-`CLEANFOX_SKIP_BOOTSTRAP=1` (toolchain já instalada).
+`CLEANFOX_SKIP_BOOTSTRAP=1` (toolchain já instalada), `CLEANFOX_ANDROID_ABI=aarch64|armv7|x86_64`.
+
+O workflow **Build** do GitHub Actions compila as quatro plataformas (disparo manual ou ao
+criar uma tag `vX.Y`, que também publica o release).
+
+### Notas por plataforma
+
+**Windows** — o instalador não é assinado: o SmartScreen vai avisar "aplicativo não reconhecido".
+Assinatura de código exige um certificado pago.
+
+**macOS** — o app não é assinado nem notarizado pela Apple (exige conta de desenvolvedor paga).
+Na primeira execução: `xattr -dr com.apple.quarantine /Applications/CleanFox.app`.
+
+**Android** — é outro aplicativo (Fenix), com diferenças importantes:
+- Telemetria (Glean), marketing (Adjust), relatórios de falha (Sentry) e Play Integrity são
+  desligados na compilação pelas flags `TELEMETRY`/`CRASH_REPORTING` do próprio Fenix.
+- As prefs de `settings/cleanfox.js` entram no GeckoView, mas `policies.json` **não existe no
+  Android**, e ajustes que o app controla por código (buscador padrão, Safe Browsing, tela
+  inicial, uBlock Origin) ainda **não** são alterados.
+- Nome, ID (`io.github.cleanfox`), ícone e wordmarks são trocados, mas ainda resta arte e
+  texto "Firefox" dentro do app (ícones alternativos, onboarding, strings traduzidas).
+  **Não distribua o APK publicamente antes de concluir o debranding** (marcas da Mozilla).
+- Para que atualizações instalem por cima, o APK precisa ser sempre assinado com a mesma
+  chave. Crie um keystore e cadastre os secrets `ANDROID_KEYSTORE_B64`,
+  `ANDROID_KEYSTORE_PASSWORD` e `ANDROID_KEY_ALIAS` no repositório; sem eles o CI gera um
+  APK com chave de debug descartável.
 
 ## Testes
 
 ```bash
-tests/lint.sh                                 # JSON, sintaxe, formato das prefs, shellcheck
+tests/lint.sh                                 # JSON, formato das prefs, patches, shellcheck
 tests/check-runtime.py /caminho/do/firefox    # sobe o navegador headless e confere cada pref e política
 ```
 
-O CI roda os dois a cada push, aplicando a configuração sobre o Firefox ESR oficial.
+O CI roda os dois a cada push e, toda semana, baixa o código-fonte mais recente (desktop e
+Android) para conferir que patches e ajustes ainda se aplicam.
 
 ## Estado e roadmap
 
-Feito e verificado (contra o Firefox ESR 153.7.0):
-- [x] Todas as prefs e políticas aceitas pelo navegador em execução (`tests/check-runtime.py`)
-- [x] `fetch` e `prepare` executados; todas as opções do `mozconfig` existem no código-fonte
+Feito e verificado:
+- [x] Todas as prefs e políticas aceitas pelo Firefox ESR 153.7.0 em execução (`tests/check-runtime.py`)
+- [x] `fetch` + `prepare` executados no desktop (ESR 153.7.0) e no Android (160.0.1)
+- [x] Todas as opções do `mozconfig` de desktop existem no código-fonte
+- [x] Toolchain de Linux instalada com `mach bootstrap`
 
 Pendente:
-- [ ] **Primeira compilação completa** (`make build` / `make package` ainda não foram executados)
-- [ ] Ícone e identidade visual próprios (hoje usa os ícones genéricos "unofficial" do Firefox)
+- [ ] **Compilações completas**: Linux em validação; Windows, macOS e Android nunca executadas
+- [ ] Android: buscador, Safe Browsing, tela inicial, uBlock Origin e debranding completo
+- [ ] Ícones `.ico`/`.icns` próprios (Windows/macOS ainda usam os genéricos "unofficial" nesses formatos)
 - [ ] Patch para remover Normandy e Health Report da compilação (hoje desligados por pref travada)
-- [ ] Releases automáticos a cada ESR e mecanismo de aviso de atualização
-- [ ] Windows e macOS; pacotes Flatpak/AppImage
+- [ ] Assinatura de código (Windows, macOS) e chave de release do Android
+- [ ] Releases automáticos a cada versão do Firefox e aviso de atualização
+- [ ] Linux arm64, macOS Intel, Flatpak/AppImage
 - [ ] Medições de desempenho e memória publicadas contra o Firefox padrão
 
 ## Licença e marcas

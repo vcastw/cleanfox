@@ -2,7 +2,7 @@
 """Teste de runtime: sobe um Firefox/CleanFox real (headless) que já tenha a
 configuração aplicada e confere, via Marionette, que:
 
-  * toda pref de settings/cleanfox.cfg tem o valor esperado (e está travada, se lockPref);
+  * toda pref de settings/cleanfox.js tem o valor esperado (e está travada, se `locked`);
   * as políticas de policies.json estão ativas e foram aceitas sem erro.
 
 Uso: tests/check-runtime.py /caminho/para/firefox   (o executável)
@@ -19,15 +19,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PORT = 2828
 
-PREF_RE = re.compile(r'^(lockPref|defaultPref)\("([^"]+)", (.+)\);$')
+PREF_RE = re.compile(r'^pref\("([^"]+)", (.+?)(, locked)?\);$')
 
 
 def expected_prefs():
     prefs = []
-    for line in (ROOT / "settings/cleanfox.cfg").read_text().splitlines():
+    for line in (ROOT / "settings/cleanfox.js").read_text().splitlines():
         m = PREF_RE.match(line)
         if m:
-            prefs.append({"kind": m[1], "name": m[2], "value": json.loads(m[3])})
+            prefs.append({"name": m[1], "value": json.loads(m[2]), "locked": bool(m[3])})
     return prefs
 
 
@@ -98,7 +98,7 @@ def main():
         sys.exit(__doc__)
     binary = sys.argv[1]
     prefs = expected_prefs()
-    policies = json.loads((ROOT / "settings/distribution/policies.json").read_text())["policies"]
+    policies = json.loads((ROOT / "settings/policies.json").read_text())["policies"]
 
     with tempfile.TemporaryDirectory() as profile:
         # Sem isto o Marionette aplica suas próprias prefs "recomendadas" para automação
@@ -127,7 +127,7 @@ def main():
         a = actual[p["name"]]
         if a["value"] != p["value"]:
             failures.append(f'pref {p["name"]}: esperado {p["value"]!r}, obtido {a["value"]!r}')
-        if p["kind"] == "lockPref" and not a["locked"]:
+        if p["locked"] and not a["locked"]:
             failures.append(f'pref {p["name"]}: deveria estar travada')
 
     if got["policyStatus"] != got["policyActive"]:
