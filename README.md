@@ -1,3 +1,5 @@
+<p align="center"><img src="branding/logo.svg" width="128" alt="Logo do CleanFox"></p>
+
 # CleanFox
 
 Fork do Firefox focado em **leveza, desempenho e minimalismo, com segurança em primeiro lugar** —
@@ -30,7 +32,7 @@ ele é um conjunto pequeno e auditável de arquivos aplicado sobre o código-fon
 | `mozconfig` | Opções de compilação de todas as plataformas |
 | `settings/cleanfox.js` | Prefs padrão/travadas, cada uma com o motivo |
 | `settings/policies.json` | Políticas do desktop (buscador, uBlock Origin, IA, mensagens) |
-| `branding/` | Nome, ícones e wordmarks (gerados por `tools/gen-branding.py`) |
+| `branding/` | Nome e logo (`logo.svg`); ícones e wordmarks são gerados dele por `tools/gen-branding.py` |
 | `patches/` | Alterações no código-fonte (último recurso) |
 | `scripts/` | Baixar fonte, preparar, compilar, empacotar |
 | `tests/` | Lint estático e teste de runtime num navegador real |
@@ -166,7 +168,7 @@ Feito e verificado:
 Pendente:
 - [ ] **Compilações completas**: Linux em validação; Windows, macOS e Android nunca executadas
 - [ ] Android: buscador, Safe Browsing, tela inicial, uBlock Origin e debranding completo
-- [ ] Ícones `.ico`/`.icns` próprios (Windows/macOS ainda usam os genéricos "unofficial" nesses formatos)
+- [ ] Ícones secundários do Windows/macOS (documento, navegação privativa, instalador) ainda são os genéricos "unofficial"
 - [ ] Patch para remover Normandy e Health Report da compilação (hoje desligados por pref travada)
 - [ ] Assinatura de código (Windows, macOS) e chave de release do Android
 - [ ] Releases automáticos a cada versão do Firefox e aviso de atualização
