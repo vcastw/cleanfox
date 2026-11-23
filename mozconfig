@@ -1,0 +1,47 @@
+# CleanFox — opções de compilação.
+# Variáveis de ambiente opcionais:
+#   CLEANFOX_FAST_BUILD=1  desliga LTO (compila mais rápido e com menos RAM; binário mais lento)
+#   CLEANFOX_PGO=1         liga PGO (binário mais rápido; a compilação roda duas vezes)
+
+ac_add_options --enable-application=browser
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-cleanfox
+
+# --- Identidade: nada de marca Firefox, perfil separado do Firefox instalado ---
+ac_add_options --with-app-name=cleanfox
+ac_add_options --with-app-basename=CleanFox
+ac_add_options --with-branding=browser/branding/cleanfox
+ac_add_options --with-distribution-id=io.github.cleanfox
+
+# --- Sem telemetria / coleta ---
+# MOZILLA_OFFICIAL não é definido de propósito: sem ele MOZ_TELEMETRY_REPORTING fica
+# desligado e o código de envio de telemetria não é compilado.
+# Normandy (estudos) e Health Report são impostos por browser/moz.configure e não dá
+# para removê-los por aqui; ficam desligados por prefs travadas em settings/cleanfox.cfg.
+ac_add_options --disable-crashreporter
+
+# --- Sem atualizador da Mozilla: atualizações vêm dos releases do CleanFox ---
+ac_add_options --disable-updater
+
+# --- Segurança ---
+# Mantidos de propósito (padrões do Firefox que outros forks desligam):
+#   * assinatura obrigatória de extensões
+#   * sandbox RLBox/wasm das bibliotecas de terceiros
+ac_add_options --enable-hardening
+
+# --- Desempenho e tamanho ---
+ac_add_options --enable-release
+ac_add_options --enable-optimize
+ac_add_options --enable-rust-simd
+ac_add_options --disable-debug
+ac_add_options --disable-debug-symbols
+ac_add_options --disable-tests
+ac_add_options --enable-strip
+ac_add_options --enable-install-strip
+
+if [ -z "$CLEANFOX_FAST_BUILD" ]; then
+  ac_add_options --enable-lto=cross
+fi
+
+if [ -n "$CLEANFOX_PGO" ]; then
+  ac_add_options MOZ_PGO=1
+fi

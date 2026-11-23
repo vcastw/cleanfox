@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: tests/lint.sh
+
+  # Aplica a configuração sobre um Firefox ESR oficial e confere, no navegador rodando,
+  # que todas as prefs e políticas foram aceitas.
+  runtime:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Baixar Firefox ESR
+        run: |
+          source scripts/common.sh
+          v="$(resolve_version)"
+          curl -fL --retry 3 -o firefox.tar.xz "$ARCHIVE/$v/linux-x86_64/en-US/firefox-$v.tar.xz"
+          tar -xf firefox.tar.xz
+      - run: scripts/apply-config.sh firefox
+      - run: tests/check-runtime.py firefox/firefox
