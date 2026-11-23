@@ -3,7 +3,9 @@
 TODA conexão que ele abre (um proxy local anota o destino de cada CONNECT/GET).
 
 Falha se aparecer um host fora de tests/allowed-hosts.txt — cada host lá tem o motivo.
-Uso: tests/check-network.py /caminho/para/cleanfox [segundos]   (padrão: 120)
+Uso: tests/check-network.py /caminho/para/cleanfox [segundos] [--also-allow HOST ...]
+     (padrão: 120 s). --also-allow é para quando o binário testado não é o CleanFox
+     (ex.: o Firefox oficial com a configuração aplicada, que tem o atualizador da Mozilla).
 
 Se a máquina já sai por um proxy (HTTPS_PROXY), o teste encadeia nele. Se esse proxy
 intercepta TLS, aponte CLEANFOX_TEST_EXTRA_CA para a CA dele (como em check-extensions.py).
@@ -75,9 +77,15 @@ def allowed_hosts():
 
 
 def main():
-    if len(sys.argv) not in (2, 3):
+    args, extra = sys.argv[1:], {}
+    while "--also-allow" in args:
+        i = args.index("--also-allow")
+        extra[args[i + 1]] = "permitido só nesta execução (--also-allow)"
+        del args[i:i + 2]
+    if len(args) not in (1, 2):
         sys.exit(__doc__)
-    seconds = int(sys.argv[2]) if len(sys.argv) == 3 else 120
+    binary = args[0]
+    seconds = int(args[1]) if len(args) == 2 else 120
     ready = []
     threading.Thread(target=run_proxy, args=(ready,), daemon=True).start()
     while not ready:
@@ -98,7 +106,7 @@ def main():
             prefs["security.cert_pinning.enforcement_level"] = 1  # ver check-extensions.py
         js = lambda v: "true" if v is True else str(v) if isinstance(v, int) else f'"{v}"'
         Path(profile, "user.js").write_text("".join(f'user_pref("{k}", {js(v)});\n' for k, v in prefs.items()))
-        proc = subprocess.Popen([sys.argv[1], "--headless", "--no-remote", "--profile", profile],
+        proc = subprocess.Popen([binary, "--headless", "--no-remote", "--profile", profile],
                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         time.sleep(seconds)
         proc.terminate()
@@ -107,7 +115,7 @@ def main():
         except subprocess.TimeoutExpired:
             proc.kill()
 
-    allowed = allowed_hosts()
+    allowed = allowed_hosts() | extra
     unknown = []
     print(f"Conexões em {seconds} s:")
     for host, n in sorted(seen.items(), key=lambda kv: -kv[1]):

@@ -33,8 +33,10 @@ jobs:
       - run: tests/check-runtime.py firefox/firefox
       - name: Extensões de fábrica instalam
         run: tests/check-extensions.py firefox/firefox
+      # O Firefox oficial tem o atualizador da Mozilla (aus5), que o CleanFox compilado
+      # não tem; só aqui ele é aceito.
       - name: Só conexões permitidas (tests/allowed-hosts.txt)
-        run: tests/check-network.py firefox/firefox 120
+        run: tests/check-network.py firefox/firefox 120 --also-allow aus5.mozilla.org
 
   # Baixa o código-fonte atual e confere que branding, prefs, patches e os ajustes do
   # Android ainda se aplicam (sem compilar).
