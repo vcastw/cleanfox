@@ -1,0 +1,25 @@
+# Hosts que o CleanFox (perfil novo, parado) pode contatar sozinho, cada um com o motivo.
+# Usado por tests/check-network.py. Host novo aqui exige motivo e revisão no PR.
+
+# --- Navegador ---
+firefox.settings.services.mozilla.com  segurança: revogação de certificados (CRLite), bloqueio de extensões maliciosas, listas de rastreadores
+firefox-settings.mozilla-backup.org  segurança: servidor reserva do anterior, usado quando ele falha
+content-signature-2.cdn.mozilla.net  segurança: cadeia de certificados que assina as listas acima
+firefox-settings-attachments.cdn.mozilla.net  segurança: arquivos grandes das listas acima (ex.: CRLite)
+addons.mozilla.org  extensões de fábrica: download na primeira execução
+versioncheck-bg.addons.mozilla.org  extensões: verificação de atualizações de segurança
+
+# --- Extensão uBlock Origin: listas de filtros padrão ---
+ublockorigin.github.io  extensão uBlock Origin: listas de filtros
+ublockorigin.pages.dev  extensão uBlock Origin: listas de filtros (espelho)
+cdn.jsdelivr.net  extensão uBlock Origin: listas de filtros (espelho)
+raw.githubusercontent.com  extensão uBlock Origin: listas de filtros
+curbengh.github.io  extensão uBlock Origin: lista de malware (URLhaus)
+malware-filter.gitlab.io  extensão uBlock Origin: lista de malware (espelho)
+pgl.yoyo.org  extensão uBlock Origin: lista Peter Lowe
+publicsuffix.org  extensão uBlock Origin: lista de sufixos públicos de domínio
+easylist.to  extensão uBlock Origin: EasyList/EasyPrivacy
+secure.fanboy.co.nz  extensão uBlock Origin: listas Fanboy (espelho)
+
+# --- Extensão Privacy Badger ---
+www.eff.org  extensão Privacy Badger: lista de exceções (yellowlist) e atualizações de dados

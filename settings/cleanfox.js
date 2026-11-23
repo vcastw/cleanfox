@@ -74,6 +74,11 @@ pref("browser.places.speculativeConnect.enabled", false);
 pref("network.trr.mode", 5);
 pref("doh-rollout.disable-heuristics", true);
 
+// Serviço de push da Mozilla: sem isto o navegador mantém, desde a inicialização, uma
+// conexão permanente com push.services.mozilla.com identificada por um ID fixo.
+// Custo: notificações de sites só chegam com a aba aberta.
+pref("dom.push.connection.enabled", false);
+
 // ===========================================================================
 // 3. SERVIÇOS DE "BIG TECHS"
 // ===========================================================================
@@ -101,6 +106,11 @@ pref("geo.provider.network.url", "https://api.beacondb.net/v1/geolocate");
 pref("media.eme.enabled", false);
 pref("media.gmp-widevinecdm.enabled", false);
 pref("media.gmp-manager.url", "data:text/plain,");
+// Sem isto, quando o servidor acima falha o Firefox recorre a uma lista embutida e baixa
+// o codec OpenH264 direto da Cisco (ciscobinary.openh264.org). Chamadas de vídeo usam VP8/VP9.
+pref("media.gmp-manager.updateEnabled", false);
+// Widevine reativado não deve ser baixado do servidor de atualização do Google.
+pref("media.gmp-widevinecdm.allow-chromium-update", false);
 
 // ===========================================================================
 // 4. MINIMALISMO: sem anúncios, promoções, IA embutida ou serviços extras
@@ -129,6 +139,9 @@ pref("browser.promo.pin.enabled", false);
 pref("browser.discovery.enabled", false);
 pref("extensions.getAddons.showPane", false);
 pref("extensions.htmlaboutaddons.recommendations.enabled", false);
+// Não envia periodicamente a lista de extensões instaladas para buscar metadados na AMO.
+// (As atualizações das extensões continuam funcionando.)
+pref("extensions.getAddons.cache.enabled", false);
 
 // Sugestões patrocinadas e envio do que você digita para o buscador
 pref("browser.urlbar.quicksuggest.enabled", false);

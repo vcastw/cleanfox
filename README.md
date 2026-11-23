@@ -13,7 +13,7 @@ sem telemetria e sem serviços de big techs ligados por padrão.
 
 | Plataforma | Base | Pacote gerado | Estado |
 |---|---|---|---|
-| Linux x86_64 | Firefox ESR | `.tar.xz` | Preparação validada; compilação em validação |
+| Linux x86_64 | Firefox ESR | `.tar.xz` | **Compilado e testado** (prefs, políticas, extensões e rede no binário final) |
 | Windows x86_64 | Firefox ESR | `.zip` + instalador `.exe` | Scripts e CI escritos, **nunca compilado** |
 | macOS (Apple Silicon) | Firefox ESR | `.dmg` | Scripts e CI escritos, **nunca compilado** |
 | Android (arm64) | Firefox estável (não existe ESR para Android) | `.apk` | Preparação validada, **nunca compilado**; debranding incompleto |
@@ -31,7 +31,7 @@ ele é um conjunto pequeno e auditável de arquivos aplicado sobre o código-fon
 | `version`, `version-android` | Versão base do Firefox (`esr-latest` / `release-latest`, ou uma versão fixa) |
 | `mozconfig` | Opções de compilação de todas as plataformas |
 | `settings/cleanfox.js` | Prefs padrão/travadas, cada uma com o motivo |
-| `settings/policies.json` | Políticas do desktop (buscador, uBlock Origin, IA, mensagens) |
+| `settings/policies.json` | Políticas do desktop (buscador, extensões de fábrica, IA, mensagens) |
 | `branding/` | Nome e logo (`logo.svg`); ícones e wordmarks são gerados dele por `tools/gen-branding.py` |
 | `patches/` | Alterações no código-fonte (último recurso) |
 | `scripts/` | Baixar fonte, preparar, compilar, empacotar |
@@ -43,13 +43,15 @@ ele é um conjunto pequeno e auditável de arquivos aplicado sobre o código-fon
 - Telemetria, Health Report, estudos (Normandy/Shield), relatórios de travamento e a
   "atribuição de anúncios com privacidade": desligados e **travados** (não dá para religar pela interface).
 - Código de envio de telemetria e o crash reporter não são compilados.
-- Sem detecção de portal cativo, consulta de região, pré-conexões especulativas e
-  system add-ons empurrados fora do ciclo de release.
+- Sem detecção de portal cativo, consulta de região, pré-conexões especulativas,
+  system add-ons empurrados fora do ciclo de release e conexão permanente com o serviço
+  de push da Mozilla.
 
 **Sem big techs por padrão**
 - Buscador padrão DuckDuckGo; Google, Bing, Amazon, eBay e Perplexity removidos.
-- Google Safe Browsing desligado; DRM Widevine (Google) desligado; geolocalização via BeaconDB
-  em vez do Google; DNS-over-HTTPS (Cloudflare) não é ativado sozinho.
+- Google Safe Browsing desligado; DRM Widevine (Google) desligado e sem atualização pelo
+  servidor do Google; geolocalização via BeaconDB em vez do Google; DNS-over-HTTPS (Cloudflare)
+  não é ativado sozinho; o codec OpenH264 não é baixado da Cisco.
 - Conta Firefox/Sync desligada por padrão (reativável).
 
 **Minimalista**
@@ -61,7 +63,9 @@ ele é um conjunto pequeno e auditável de arquivos aplicado sobre o código-fon
 - Modo somente-HTTPS, Proteção contra Rastreamento no modo rigoroso, proteção contra
   fingerprinting, Global Privacy Control, WebRTC sem vazamento de IP local, punycode visível,
   scripts em PDF desligados, TLS 0-RTT desligado.
-- uBlock Origin instalado por política.
+- Extensões de fábrica (abaixo), com a assinatura da Mozilla obrigatória.
+- Fixação de certificados no modo estrito: domínios da Mozilla recusam até CAs instaladas
+  manualmente, o que barra proxies que interceptam TLS.
 - Compilado com `--enable-hardening`. Diferente de outros forks, **mantemos** a assinatura
   obrigatória de extensões e o sandbox RLBox das bibliotecas de terceiros.
 
@@ -69,16 +73,35 @@ ele é um conjunto pequeno e auditável de arquivos aplicado sobre o código-fon
 conexões em segundo plano, (2) bloqueio de conteúdo por padrão e (3) build com LTO/PGO e sem
 símbolos de depuração. Não incluímos "tweaks" de rede ou cache sem efeito medido.
 
+## Extensões de fábrica
+
+Instaladas da loja da Mozilla na primeira execução, liberadas também na janela privativa.
+Todas são "Recomendadas" pela Mozilla (revisadas a cada versão) e você pode removê-las.
+
+| Extensão | O que faz |
+|---|---|
+| [uBlock Origin](https://addons.mozilla.org/firefox/addon/ublock-origin/) | Bloqueia anúncios, rastreadores e domínios de malware |
+| [Privacy Badger](https://addons.mozilla.org/firefox/addon/privacy-badger17/) (EFF) | Bloqueia rastreadores pelo comportamento e envia o sinal de "não venda meus dados" (GPC) |
+| [Decentraleyes](https://addons.mozilla.org/firefox/addon/decentraleyes/) | Serve bibliotecas comuns (jQuery, etc.) localmente, sem consultar CDNs de terceiros |
+
+No Android ainda não vêm instaladas (veja [Notas por plataforma](#notas-por-plataforma)).
+
 ## Conexões que continuam existindo (e por quê)
 
-Transparência em vez de promessa de "zero conexões":
+Transparência em vez de promessa de "zero conexões". Medido abrindo o CleanFox com um perfil
+novo e deixando-o parado por 2 minutos (`tests/check-network.py`, que roda no CI; a lista
+completa e o motivo de cada host estão em `tests/allowed-hosts.txt`):
 
 | Destino | Motivo | Como desligar |
 |---|---|---|
 | `firefox.settings.services.mozilla.com` | Revogação de certificados (CRLite), bloqueio de extensões maliciosas, listas de rastreadores. **Download apenas; é segurança.** | `services.settings.server` |
-| `addons.mozilla.org` | Instalar/atualizar o uBlock Origin e suas extensões | Remover `ExtensionSettings` da política; `extensions.update.enabled` |
-| Listas de filtros do uBlock Origin | Bloqueio de anúncios/malware | Configurações do uBO |
-| Servidor de push da Mozilla | Só se você aceitar notificações de algum site | `dom.push.connection.enabled` |
+| `addons.mozilla.org`, `versioncheck-bg.addons.mozilla.org` | Instalar as extensões de fábrica e buscar atualizações de segurança delas | Remover a extensão; `extensions.update.enabled` |
+| GitHub, jsDelivr, GitLab e outros listados | Listas de filtros do uBlock Origin | Configurações do uBlock Origin |
+| `www.eff.org` | Dados do Privacy Badger | Remover a extensão |
+
+Na mesma medição, o Firefox oficial contatou 13 destinos, entre eles três do Google
+(Safe Browsing, atualizador de plugins e `dl.google.com`), a Cisco (codec), serviço de
+localização, estudos (Normandy), contas, push e detecção de portal cativo.
 
 ## Decisões com custo — leia antes de usar
 
@@ -89,6 +112,13 @@ Transparência em vez de promessa de "zero conexões":
   cada novo release do CleanFox. Navegador desatualizado é o maior risco de segurança que existe —
   enquanto o projeto não publicar releases a cada ESR, prefira usar só a configuração (abaixo).
 - **DRM desligado.** Netflix, Spotify etc. não tocam até reativar o DRM nas Configurações.
+- **Sem push em segundo plano.** Notificações de sites só chegam com a aba aberta
+  (`dom.push.connection.enabled`).
+- **Sem codec H.264 da Cisco.** Chamadas de vídeo usam VP8/VP9; alguns serviços antigos
+  exigem H.264 (`media.gmp-manager.updateEnabled`).
+- **Proxies corporativos que inspecionam TLS** não acessam domínios da Mozilla (loja de
+  extensões, listas de segurança) por causa do modo estrito de fixação de certificados.
+  Se você confia nesse proxy, mude `security.cert_pinning.enforcement_level` para `1`.
 
 ## Usar só a configuração, num Firefox já instalado
 
@@ -150,12 +180,15 @@ Na primeira execução: `xattr -dr com.apple.quarantine /Applications/CleanFox.a
 ## Testes
 
 ```bash
-tests/lint.sh                                 # JSON, formato das prefs, patches, shellcheck
-tests/check-runtime.py /caminho/do/firefox    # sobe o navegador headless e confere cada pref e política
+tests/lint.sh                                    # formato das prefs, JSON, actions fixadas, chave da Mozilla, shellcheck
+tests/check-runtime.py /caminho/do/cleanfox      # sobe o navegador headless e confere cada pref e política
+tests/check-extensions.py /caminho/do/cleanfox   # extensões de fábrica instaladas, ativas e assinadas
+tests/check-network.py /caminho/do/cleanfox      # toda conexão em 2 min parado está em tests/allowed-hosts.txt
 ```
 
-O CI roda os dois a cada push e, toda semana, baixa o código-fonte mais recente (desktop e
-Android) para conferir que patches e ajustes ainda se aplicam.
+O CI roda todos a cada push (sobre o Firefox ESR oficial com a configuração do CleanFox) e,
+toda semana, baixa o código-fonte mais recente (desktop e Android) para conferir que patches
+e ajustes ainda se aplicam. Controles de segurança e lacunas conhecidas: [SECURITY.md](SECURITY.md).
 
 ## Estado e roadmap
 
@@ -164,10 +197,14 @@ Feito e verificado:
 - [x] `fetch` + `prepare` executados no desktop (ESR 153.7.0) e no Android (160.0.1)
 - [x] Todas as opções do `mozconfig` de desktop existem no código-fonte
 - [x] Toolchain de Linux instalada com `mach bootstrap`
+- [x] **Linux compilado** (64 min, sem LTO) e empacotado; no binário final, todas as prefs,
+  políticas e extensões de fábrica conferidas e só conexões permitidas
+- [x] Download do código-fonte recusa assinatura inválida ou de outra chave (testado)
 
 Pendente:
-- [ ] **Compilações completas**: Linux em validação; Windows, macOS e Android nunca executadas
-- [ ] Android: buscador, Safe Browsing, tela inicial, uBlock Origin e debranding completo
+- [ ] **Compilações de Windows, macOS e Android** (nunca executadas)
+- [ ] Android: buscador, Safe Browsing, tela inicial, extensões de fábrica e debranding completo
+- [ ] `application.ini` ainda diz `Vendor=Mozilla`; `pingsender` ainda é empacotado (sem uso, telemetria desligada)
 - [ ] Ícones secundários do Windows/macOS (documento, navegação privativa, instalador) ainda são os genéricos "unofficial"
 - [ ] Patch para remover Normandy e Health Report da compilação (hoje desligados por pref travada)
 - [ ] Assinatura de código (Windows, macOS) e chave de release do Android
