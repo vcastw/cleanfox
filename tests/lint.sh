@@ -21,10 +21,28 @@ for p in patches/*.patch patches/android/*.patch; do
   if ! grep -q '^--- a/' "$p" || ! grep -q '^+++ b/' "$p"; then echo "patch malformado: $p"; exit 1; fi
 done
 
+echo "== workflows: toda action fixada por SHA (tag é mutável)"
+bad="$(grep -hnE '^\s*-?\s*uses:' .github/workflows/*.yml | grep -vE 'uses: [^@]+@[0-9a-f]{40}( |$)' || true)"
+[ -z "$bad" ] || { echo "actions sem SHA fixo:"; echo "$bad"; exit 1; }
+
+echo "== keys/: chave da Mozilla bate com a impressão digital fixada em fetch.sh"
+fpr="$(sed -nE 's/^MOZILLA_KEY_FPR="([0-9A-F]{40})"$/\1/p' scripts/fetch.sh)"
+[ -n "$fpr" ] || { echo "MOZILLA_KEY_FPR ausente em scripts/fetch.sh"; exit 1; }
+gpg --batch --with-colons --import-options show-only --import keys/mozilla-release-key.asc 2>/dev/null \
+  | awk -F: '/^pub/{p=1;next} p&&/^fpr/{print $10; exit}' | grep -qx "$fpr" \
+  || { echo "keys/mozilla-release-key.asc não é a chave $fpr"; exit 1; }
+
+echo "== allowed-hosts.txt: todo host tem motivo"
+bad="$(grep -vE '^(#.*)?$' tests/allowed-hosts.txt | grep -vE '^[a-z0-9.-]+  [^ ].+$' || true)"
+[ -z "$bad" ] || { echo "linhas sem motivo:"; echo "$bad"; exit 1; }
+
 echo "== mozconfig: sintaxe shell"
 bash -n mozconfig
 
 echo "== shellcheck"
 shellcheck -x scripts/*.sh tests/*.sh
+
+echo "== Python dos testes: sintaxe"
+python3 -m py_compile tests/*.py tools/*.py
 
 echo "OK"

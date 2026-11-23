@@ -15,22 +15,29 @@ if [ ! -f "$TARBALL" ]; then
   mv "$TARBALL.part" "$TARBALL"
 fi
 
-log "Conferindo SHA-512"
+# Integridade em duas etapas, falhando fechado:
+#  1. SHA512SUMS assinado pela chave de release da Mozilla. A chave pública fica neste
+#     repositório (keys/), com a impressão digital fixada abaixo: o servidor de download
+#     não consegue trocar a raiz de confiança.
+#  2. SHA-512 do tarball conferido contra o SHA512SUMS autenticado.
+MOZILLA_KEY_FPR="14F26682D0916CDD81E37B6D61B7B526D98F0353"
+need gpg gpgv
+
+log "Conferindo assinatura da Mozilla"
 curl -fsSL -o SHA512SUMS "$ARCHIVE/$VERSION/SHA512SUMS"
+curl -fsSL -o SHA512SUMS.asc "$ARCHIVE/$VERSION/SHA512SUMS.asc"
+keyring="$BUILD_DIR/mozilla-release-key.gpg"
+gpg --batch --yes --dearmor -o "$keyring" "$ROOT/keys/mozilla-release-key.asc"
+status="$(gpgv --status-fd 1 --keyring "$keyring" SHA512SUMS.asc SHA512SUMS 2>/dev/null || true)"
+grep -q "^\[GNUPG:\] VALIDSIG .* $MOZILLA_KEY_FPR\$" <<< "$status" \
+  || die "assinatura do SHA512SUMS inválida ou de outra chave (se a Mozilla trocou a chave, atualize keys/ conferindo a impressão digital por outro canal)"
+log "Assinatura válida (chave $MOZILLA_KEY_FPR)"
+
+log "Conferindo SHA-512"
 expected="$(awk -v f="source/$TARBALL" '$2 == f { print $1 }' SHA512SUMS)"
 [ -n "$expected" ] || die "$TARBALL não consta no SHA512SUMS"
 actual="$(sha 512 "$TARBALL")"
 [ "$expected" = "$actual" ] || die "SHA-512 não confere para $TARBALL (apague o arquivo e baixe de novo)"
-
-# Assinatura GPG da Mozilla sobre o SHA512SUMS. Só é conferida se a chave de release
-# da Mozilla já estiver no seu chaveiro (importe-a de uma fonte em que você confia).
-if command -v gpg >/dev/null && curl -fsSL -o SHA512SUMS.asc "$ARCHIVE/$VERSION/SHA512SUMS.asc"; then
-  if gpg --verify SHA512SUMS.asc SHA512SUMS 2>/dev/null; then
-    log "Assinatura GPG válida"
-  else
-    log "AVISO: assinatura GPG não verificada (chave da Mozilla ausente do chaveiro?)"
-  fi
-fi
 
 log "Extraindo em $SRC_DIR"
 rm -rf "$SRC_DIR"

@@ -28,7 +28,9 @@ first() { # first <glob...> -> primeiro arquivo existente
 case "$TARGET" in
   linux)
     pkg="$(first "$OBJ"/dist/cleanfox-*.tar.xz "$OBJ"/dist/cleanfox-*.tar.bz2)"
-    tar -tf "$pkg" | grep -q '^cleanfox/distribution/policies.json$' \
+    # Lista antes de filtrar: com pipefail, `tar | grep -q` falha por SIGPIPE quando o grep acha cedo.
+    listing="$(tar -tf "$pkg")"
+    grep -qx 'cleanfox/distribution/policies.json' <<< "$listing" \
       || die "o pacote não contém distribution/policies.json (patch 0001 não aplicado?)"
     collect "$pkg" "cleanfox-$VERSION-linux-$ARCH.tar.${pkg##*.}"
     ;;
