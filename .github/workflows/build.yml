@@ -25,6 +25,10 @@ jobs:
     timeout-minutes: 350
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      # O mach da Mozilla só suporta Python até 3.12; o Python do runner pode ser mais novo.
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.12"
       - name: Liberar espaço em disco
         run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
       - run: make fetch prepare
@@ -41,6 +45,10 @@ jobs:
     timeout-minutes: 350
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      # O mach da Mozilla só suporta Python até 3.12; o Python do runner pode ser mais novo.
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.12"
       - name: GnuPG (conferir a assinatura do código-fonte)
         run: command -v gpgv || brew install gnupg
       - run: make fetch prepare
@@ -90,6 +98,10 @@ jobs:
       CLEANFOX_TARGET: android
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      # O mach da Mozilla só suporta Python até 3.12; o Python do runner pode ser mais novo.
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.12"
       - name: Liberar espaço em disco
         run: sudo rm -rf /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
       - run: make fetch prepare
