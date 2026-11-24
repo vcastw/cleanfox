@@ -112,8 +112,20 @@ jobs:
           python-version: "3.12"
       - name: Liberar espaço em disco
         run: sudo rm -rf /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
+      # Gradle, Rust e C++ juntos estouram os 16 GB do runner ("lost communication").
+      - name: Swap de 16 GB
+        run: |
+          sudo swapoff -a
+          sudo fallocate -l 16G /mnt/swapfile
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+          free -h
       - run: make fetch prepare
-      - run: make build
+      - name: make build (com registro de memória a cada 2 min)
+        run: |
+          (while sleep 120; do echo "[memória] $(free -m | awk 'NR==2{print "RAM " $3 "/" $2 " MB"} NR==3{print "swap " $3 "/" $2 " MB"}' | tr '\n' ' ')"; done) &
+          make build
       - run: make package
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
