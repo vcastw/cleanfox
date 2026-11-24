@@ -30,7 +30,10 @@ build, CI e releases.
 - **Downloads da Mozilla dependem da Mozilla.** A chave em `keys/` é a raiz de confiança:
   se a Mozilla trocá-la, a compilação para até alguém conferir a nova chave por outro canal.
 - **MozillaBuild (Windows) sem hash fixo.** O job do Windows baixa a versão "Latest" do
-  instalador sem conferir hash. A compilação de Windows nunca foi executada.
+  instalador sem conferir hash.
+- **Binário do Windows sem teste automático.** No CI, Linux e macOS rodam
+  `check-runtime`, `check-extensions` e `check-network` no pacote final; o Windows só
+  compila e empacota (`tests/test-package.sh` cobre a escolha dos arquivos).
 - **Ambiente `release` sem regra de proteção.** O workflow já usa o ambiente; restringi-lo
   a tags `v*` (e exigir aprovação) é configuração do repositório, em Settings > Environments.
 - **Windows e macOS sem assinatura de código**; Android sem chave de release definida.

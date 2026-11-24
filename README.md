@@ -5,18 +5,17 @@
 Fork do Firefox focado em **leveza, desempenho e minimalismo, com segurança em primeiro lugar** —
 sem telemetria e sem serviços de big techs ligados por padrão.
 
-> **Estado do projeto:** inicial. Não há binários publicados ainda. A configuração é testada
-> automaticamente num Firefox real; a compilação de cada plataforma está em estágios
-> diferentes de validação — veja [Plataformas](#plataformas).
+> **Estado do projeto:** inicial. Não há binários publicados ainda. As quatro plataformas
+> compilam no CI; Linux e macOS também são testados no binário final — veja [Plataformas](#plataformas).
 
 ## Plataformas
 
 | Plataforma | Base | Pacote gerado | Estado |
 |---|---|---|---|
-| Linux x86_64 | Firefox ESR | `.tar.xz` | **Compilado e testado** (prefs, políticas, extensões e rede no binário final) |
-| Windows x86_64 | Firefox ESR | `.zip` + instalador `.exe` | Scripts e CI escritos, **nunca compilado** |
-| macOS (Apple Silicon) | Firefox ESR | `.dmg` | Scripts e CI escritos, **nunca compilado** |
-| Android (arm64) | Firefox estável (não existe ESR para Android) | `.apk` | Preparação validada; **compilação ainda não confirmada** |
+| Linux x86_64 | Firefox ESR | `.tar.xz` | **Compilado e testado no CI** (prefs, políticas, extensões e rede no binário final) |
+| Windows x86_64 | Firefox ESR | `.zip` + instalador `.exe` | **Compilado no CI**; binário ainda sem teste automático |
+| macOS (Apple Silicon) | Firefox ESR | `.dmg` | **Compilado e testado no CI** (prefs, políticas, extensões e rede no binário final) |
+| Android (arm64) | Firefox estável (não existe ESR para Android) | `.apk` | **Compilado no CI**; sem teste em aparelho |
 
 Em **qualquer desktop** dá para usar hoje a configuração do CleanFox sobre um Firefox já
 instalado — veja [Usar só a configuração](#usar-só-a-configuração-num-firefox-já-instalado).
@@ -204,9 +203,12 @@ Feito e verificado:
 - [x] **Linux compilado** (64 min, sem LTO) e empacotado; no binário final, todas as prefs,
   políticas e extensões de fábrica conferidas e só conexões permitidas
 - [x] Download do código-fonte recusa assinatura inválida ou de outra chave (testado)
+- [x] **As quatro plataformas compilam no GitHub Actions** (Linux, macOS, Windows, Android);
+  em Linux e macOS o binário é testado (prefs, extensões, rede) antes de publicar
 
 Pendente:
-- [ ] **Compilações de Windows, macOS e Android** (nunca executadas)
+- [ ] Testes do binário no Windows (o CI só compila e empacota)
+- [ ] Primeiro release (`v0.1`)
 - [ ] Android: debranding dos textos restantes (sincronização, traduções) e ícones alternativos;
   teste em aparelho real
 - [ ] `application.ini` ainda diz `Vendor=Mozilla`; `pingsender` ainda é empacotado (sem uso, telemetria desligada)
