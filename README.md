@@ -20,6 +20,42 @@ sem telemetria e sem serviços de big techs ligados por padrão.
 Em **qualquer desktop** dá para usar hoje a configuração do CleanFox sobre um Firefox já
 instalado — veja [Usar só a configuração](#usar-só-a-configuração-num-firefox-já-instalado).
 
+## Baixar e usar
+
+Os binários ficam na página de [Releases](https://github.com/vcastw/cleanfox/releases).
+As versões `v0.x` são pré-lançamentos: aparecem marcadas como *Pre-release*.
+
+| Sistema | Arquivo | Como instalar |
+|---|---|---|
+| Windows 10/11 (64 bits) | `cleanfox-<versão>-windows-x86_64-setup.exe` | Execute. No aviso do SmartScreen, clique em **Mais informações → Executar assim mesmo** (o instalador não é assinado). Sem instalar: baixe o `.zip`, extraia e abra `cleanfox.exe`. |
+| macOS (Apple Silicon) | `cleanfox-<versão>-macos-arm64.dmg` | Abra o `.dmg` e arraste o CleanFox para Aplicativos. Antes da primeira abertura, no Terminal: `xattr -dr com.apple.quarantine /Applications/CleanFox.app` (o app não é notarizado pela Apple). |
+| Linux (x86_64) | `cleanfox-<versão>-linux-x86_64.tar.xz` | `tar -xf cleanfox-*.tar.xz` e depois `./cleanfox/cleanfox`. Pode ficar em qualquer pasta (ex.: `~/.local/opt`). |
+| Android (arm64) | `cleanfox-<versão>-android-fenix-arm64-v8a.apk` | Abra o `.apk` no aparelho e permita a instalação de fonte desconhecida. Os outros `.apk` são para aparelhos antigos de 32 bits (`armeabi-v7a`) e emuladores (`x86_64`). |
+
+**Conferir o download** (recomendado): cada arquivo tem um `.sha256` ao lado e um atestado
+de que foi compilado pelo workflow deste repositório.
+
+```bash
+sha256sum -c cleanfox-*.sha256
+```
+
+```bash
+gh attestation verify cleanfox-<arquivo> -R vcastw/cleanfox
+```
+
+**No primeiro uso**
+- O CleanFox usa um perfil próprio: não mexe no Firefox instalado nem importa nada sozinho.
+  Para trazer favoritos e senhas: menu → Favoritos → Gerenciar favoritos → Importar e backup.
+- uBlock Origin, Privacy Badger e Decentraleyes são baixados da loja da Mozilla nos primeiros
+  segundos com internet. Dá para remover qualquer um em Extensões.
+- O buscador é o DuckDuckGo; troque em Configurações → Pesquisa.
+- Alguns sites quebram com as proteções ligadas (vídeo com DRM, sites só em HTTP). Veja
+  [Decisões com custo](#decisões-com-custo--leia-antes-de-usar) para o que religar.
+
+**Atualizações** — não há atualizador automático. Assine os releases do repositório
+(**Watch → Custom → Releases**) e instale a versão nova por cima quando sair; ela traz as
+correções de segurança do Firefox.
+
 ## Como funciona
 
 O CleanFox não copia o código do Firefox para este repositório. Como LibreWolf e Mullvad Browser,
@@ -68,6 +104,16 @@ ele é um conjunto pequeno e auditável de arquivos aplicado sobre o código-fon
   manualmente, o que barra proxies que interceptam TLS.
 - Compilado com `--enable-hardening`. Diferente de outros forks, **mantemos** a assinatura
   obrigatória de extensões e o sandbox RLBox das bibliotecas de terceiros.
+
+**Mais leve**
+- Fora da compilação: telemetria, crash reporter, atualizador, controle parental e a
+  varredura de redes Wi-Fi; no Windows, também o serviço de manutenção e o agente de
+  navegador padrão.
+- Desligados: pré-carregamento da nova aba, miniaturas de páginas, clima e "buscas em alta"
+  na barra de endereço, botão "Informar problema no site", ofertas do Relay/Lockwise e
+  mudanças de configuração remotas (Nimbus).
+- Memória: no máximo 2 páginas guardadas inteiras para o "voltar" instantâneo (o Firefox
+  guarda até 8) e abas inativas descarregadas quando a RAM acaba.
 
 **Desempenho** — sendo honesto: prefs não fazem milagre. O ganho vem de (1) menos serviços e
 conexões em segundo plano, (2) bloqueio de conteúdo por padrão e (3) build com LTO/PGO e sem
@@ -152,8 +198,8 @@ Para Android, acrescente `TARGET=android` a cada comando (`make TARGET=android f
 Variáveis: `CLEANFOX_FAST_BUILD=1` (sem LTO, menos RAM), `CLEANFOX_PGO=1` (PGO),
 `CLEANFOX_SKIP_BOOTSTRAP=1` (toolchain já instalada), `CLEANFOX_ANDROID_ABI=aarch64|armv7|x86_64`.
 
-O workflow **Build** do GitHub Actions compila as quatro plataformas (disparo manual ou ao
-criar uma tag `vX.Y`, que também publica o release).
+O workflow **Build** do GitHub Actions compila as quatro plataformas. Para publicar um
+release: crie uma tag `vX.Y` ou dispare o workflow com o campo `release_tag` preenchido.
 
 ### Notas por plataforma
 

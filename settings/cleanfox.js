@@ -214,3 +214,35 @@ pref("browser.tabs.unloadOnLowMemory", true);
 
 // Grava a sessão em disco a cada 60s em vez de 15s (menos escrita em disco)
 pref("browser.sessionstore.interval", 60000);
+
+// A página de nova aba é em branco: não pré-carrega uma em segundo plano nem tira
+// miniaturas das páginas visitadas (CPU, memória e disco gastos para nada)
+pref("browser.newtab.preload", false);
+pref("browser.pagethumbnails.capturing_disabled", true);
+
+// Mantém no máximo 2 páginas inteiras em memória para o "voltar" instantâneo
+// (o padrão guarda até 8, conforme a RAM). Voltar mais longe recarrega a página.
+pref("browser.sessionhistory.max_total_viewers", 2);
+
+// Não pergunta, a cada abertura, se quer ser o navegador padrão
+pref("browser.shell.checkDefaultBrowser", false);
+
+// ===========================================================================
+// 7. SERVIÇOS DA MOZILLA QUE NÃO FAZEM FALTA
+// ===========================================================================
+// Clima na nova aba e na barra de endereço (consulta o serviço Merino da Mozilla)
+pref("browser.newtabpage.activity-stream.showWeather", false);
+pref("browser.urlbar.suggest.weather", false);
+
+// "Buscas em alta" na barra de endereço (consulta o buscador sem você digitar nada)
+pref("browser.urlbar.suggest.trending", false);
+
+// Botão "Informar problema no site" (envia a URL e dados da página para a Mozilla)
+pref("extensions.webcompat-reporter.enabled", false);
+
+// Oferta do Firefox Relay em campos de e-mail e do Lockwise no painel de proteções
+pref("signon.firefoxRelay.feature", "disabled");
+pref("browser.contentblocking.report.lockwise.enabled", false);
+
+// Mudanças de configuração empurradas remotamente pela Mozilla (Nimbus)
+pref("nimbus.rollouts.enabled", false);

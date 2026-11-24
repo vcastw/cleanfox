@@ -15,7 +15,7 @@ build, CI e releases.
 | Fronteira | Controle | Prova |
 |---|---|---|
 | Código-fonte do Firefox baixado | `SHA512SUMS` assinado pela chave de release da Mozilla, guardada em `keys/` com impressão digital fixada em `scripts/fetch.sh`; depois SHA-512 do tarball. Falha fechado. | Testado manualmente: `SHA512SUMS` adulterado e assinatura válida de outra chave são recusados. `tests/lint.sh` confere que `keys/` é a chave fixada. |
-| CI e releases | Actions fixadas por SHA; permissões mínimas (`contents: read`); só o job de release escreve. Assinatura do APK em job separado, sem código de terceiros, no ambiente `release`. Releases com atestado de procedência (Sigstore). | `tests/lint.sh` recusa action sem SHA. Conferir um download: `gh attestation verify <arquivo> -R vcastw/cleanfox`. |
+| CI e releases | Actions fixadas por SHA; permissões mínimas (`contents: read`); só o job de release escreve. Assinatura do APK em job separado, sem código de terceiros, no ambiente `release`. Releases com atestado de procedência (Sigstore), publicados por tag `v*` ou por disparo manual com `release_tag` (nome validado, passado por variável de ambiente); o job de release baixa só os artefatos finais (`cleanfox-*`). | `tests/lint.sh` recusa action sem SHA, entrada de disparo interpolada em `run:` e artefato não assinado que case com `cleanfox-*`. Conferir um download: `gh attestation verify <arquivo> -R vcastw/cleanfox`. |
 | Coleta de dados | Telemetria, estudos, relatórios de falha e atribuição de anúncios desligados e travados; código de envio de telemetria e crash reporter fora da compilação. | `tests/check-runtime.py` sobe o navegador e confere cada pref (e trava) e política. |
 | Conexões em segundo plano | Só hosts listados, com motivo, em `tests/allowed-hosts.txt`. | `tests/check-network.py` registra toda conexão de um perfil novo parado por 2 min e falha com host desconhecido. Roda no CI. |
 | Extensões de fábrica | uBlock Origin, Privacy Badger e Decentraleyes da AMO, com assinatura da Mozilla obrigatória; usuário pode removê-las. | `tests/check-extensions.py` confere instaladas, ativas, assinadas e liberadas em janela privativa. |
@@ -35,7 +35,8 @@ build, CI e releases.
   `check-runtime`, `check-extensions` e `check-network` no pacote final; o Windows só
   compila e empacota (`tests/test-package.sh` cobre a escolha dos arquivos).
 - **Ambiente `release` sem regra de proteção.** O workflow já usa o ambiente; restringi-lo
-  a tags `v*` (e exigir aprovação) é configuração do repositório, em Settings > Environments.
+  (exigir aprovação; aceitar só `main` e tags `v*`) é configuração do repositório, em
+  Settings > Environments. O release por disparo manual roda a partir da `main`.
 - **Windows e macOS sem assinatura de código**; Android sem chave de release definida.
 - **Android:** os ajustes são edições no código do Fenix (`scripts/prepare-android.sh`) e
   não há teste automático de runtime (rede, extensões) num aparelho ou emulador. As

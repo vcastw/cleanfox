@@ -56,6 +56,11 @@ case "$CLEANFOX_TARGET" in
     # Sem atualizador da Mozilla: atualizações vêm dos releases do CleanFox.
     ac_add_options --disable-updater
 
+    # Fora da compilação: controle parental do sistema operacional e a varredura de
+    # redes Wi-Fi vizinhas (só servia para localização mais precisa).
+    ac_add_options --disable-parental-controls
+    ac_add_options --disable-necko-wifi
+
     if [ -z "$CLEANFOX_FAST_BUILD" ]; then
       ac_add_options --enable-lto=cross
     fi
