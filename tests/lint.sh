@@ -45,6 +45,15 @@ shellcheck -x scripts/*.sh tests/*.sh
 echo "== Python dos testes: sintaxe"
 python3 -m py_compile tests/*.py tools/*.py
 
+echo "== Release: só artefatos finais"
+# O APK antes da assinatura tem os mesmos nomes de arquivo do assinado; não pode casar com
+# o padrão que o job de release baixa.
+grep -q 'pattern: cleanfox-\*' .github/workflows/build.yml \
+  || { echo "ERRO: o job de release precisa baixar só pattern: cleanfox-*"; exit 1; }
+if grep -nE 'name: cleanfox-.*unsigned' .github/workflows/build.yml; then
+  echo "ERRO: artefato não assinado com nome que casa com cleanfox-*"; exit 1
+fi
+
 echo "== Empacotamento (pacotes falsos)"
 tests/test-package.sh
 

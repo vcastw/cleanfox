@@ -1,7 +1,7 @@
 name: Build
 
 # Compilação completa de todas as plataformas (várias horas cada). Disparo manual ou por
-# tag vX.Y. Só o job de Linux já foi validado; veja "Estado e roadmap" no README.
+# tag vX.Y. Estado de cada plataforma: "Plataformas" no README.
 on:
   workflow_dispatch:
     inputs:
@@ -146,7 +146,7 @@ jobs:
       - run: make package
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: cleanfox-android-unsigned
+          name: unsigned-android
           path: dist/*
 
   # Assinatura num job à parte: o job de build executa milhares de dependências de
@@ -159,7 +159,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: cleanfox-android-unsigned
+          name: unsigned-android
           path: dist
       # Sem estes secrets o APK continua com a chave de debug descartável: serve para
       # testar, mas não recebe atualização por cima. Veja "Android" no README.
@@ -193,12 +193,18 @@ jobs:
     steps:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
+          # Só os artefatos finais: "unsigned-android" tem os mesmos nomes de arquivo do
+          # APK assinado e, baixado junto, poderia sobrescrevê-lo.
+          pattern: cleanfox-*
           path: dist
           merge-multiple: true
       # Quem baixar confere com: gh attestation verify <arquivo> -R ${{ github.repository }}
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: "dist/cleanfox-*"
-      - run: gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" --generate-notes
+      # v0.x sai como pré-lançamento.
+      - run: |
+          pre=""; case "$GITHUB_REF_NAME" in v0.*) pre="--prerelease" ;; esac
+          gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" --generate-notes $pre
         env:
           GH_TOKEN: ${{ github.token }}
