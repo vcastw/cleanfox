@@ -4,6 +4,10 @@ name: Build
 # tag vX.Y. Só o job de Linux já foi validado; veja "Estado e roadmap" no README.
 on:
   workflow_dispatch:
+    inputs:
+      platforms:
+        description: "Plataformas a compilar (separadas por espaço)"
+        default: "linux macos windows android"
   push:
     tags: ["v*"]
 
@@ -16,6 +20,7 @@ env:
 
 jobs:
   linux:
+    if: github.event_name == 'push' || contains(inputs.platforms, 'linux')
     runs-on: ubuntu-24.04
     timeout-minutes: 350
     steps:
@@ -31,7 +36,8 @@ jobs:
           path: dist/*
 
   macos:
-    runs-on: macos-14 # Apple Silicon
+    if: github.event_name == 'push' || contains(inputs.platforms, 'macos')
+    runs-on: macos-15 # Apple Silicon (a imagem macos-14 foi aposentada)
     timeout-minutes: 350
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -46,6 +52,7 @@ jobs:
           path: dist/*
 
   windows:
+    if: github.event_name == 'push' || contains(inputs.platforms, 'windows')
     runs-on: windows-2022
     timeout-minutes: 350
     env:
@@ -68,6 +75,7 @@ jobs:
           path: dist/*
 
   android:
+    if: github.event_name == 'push' || contains(inputs.platforms, 'android')
     runs-on: ubuntu-24.04
     timeout-minutes: 350
     env:
