@@ -16,7 +16,7 @@ sem telemetria e sem serviços de big techs ligados por padrão.
 | Linux x86_64 | Firefox ESR | `.tar.xz` | **Compilado e testado** (prefs, políticas, extensões e rede no binário final) |
 | Windows x86_64 | Firefox ESR | `.zip` + instalador `.exe` | Scripts e CI escritos, **nunca compilado** |
 | macOS (Apple Silicon) | Firefox ESR | `.dmg` | Scripts e CI escritos, **nunca compilado** |
-| Android (arm64) | Firefox estável (não existe ESR para Android) | `.apk` | Preparação validada, **nunca compilado**; debranding incompleto |
+| Android (arm64) | Firefox estável (não existe ESR para Android) | `.apk` | Preparação validada; **compilação ainda não confirmada** |
 
 Em **qualquer desktop** dá para usar hoje a configuração do CleanFox sobre um Firefox já
 instalado — veja [Usar só a configuração](#usar-só-a-configuração-num-firefox-já-instalado).
@@ -85,7 +85,7 @@ Todas são "Recomendadas" pela Mozilla (revisadas a cada versão) e você pode r
 | [Privacy Badger](https://addons.mozilla.org/firefox/addon/privacy-badger17/) (EFF) | Bloqueia rastreadores pelo comportamento e envia o sinal de "não venda meus dados" (GPC) |
 | [Decentraleyes](https://addons.mozilla.org/firefox/addon/decentraleyes/) | Serve bibliotecas comuns (jQuery, etc.) localmente, sem consultar CDNs de terceiros |
 
-No Android ainda não vêm instaladas (veja [Notas por plataforma](#notas-por-plataforma)).
+No Android, as mesmas três são instaladas na primeira abertura do app (veja [Notas por plataforma](#notas-por-plataforma)).
 
 ## Conexões que continuam existindo (e por quê)
 
@@ -164,15 +164,18 @@ Assinatura de código exige um certificado pago.
 **macOS** — o app não é assinado nem notarizado pela Apple (exige conta de desenvolvedor paga).
 Na primeira execução: `xattr -dr com.apple.quarantine /Applications/CleanFox.app`.
 
-**Android** — é outro aplicativo (Fenix), com diferenças importantes:
-- Telemetria (Glean), marketing (Adjust), relatórios de falha (Sentry) e Play Integrity são
-  desligados na compilação pelas flags `TELEMETRY`/`CRASH_REPORTING` do próprio Fenix.
-- As prefs de `settings/cleanfox.js` entram no GeckoView, mas `policies.json` **não existe no
-  Android**, e ajustes que o app controla por código (buscador padrão, Safe Browsing, tela
-  inicial, uBlock Origin) ainda **não** são alterados.
-- Nome, ID (`io.github.cleanfox`), ícone e wordmarks são trocados, mas ainda resta arte e
-  texto "Firefox" dentro do app (ícones alternativos, onboarding, strings traduzidas).
-  **Não distribua o APK publicamente antes de concluir o debranding** (marcas da Mozilla).
+**Android** — é outro aplicativo (Fenix). Os ajustes ficam em `scripts/prepare-android.sh`
+e cada um falha a compilação se o código da Mozilla mudar, em vez de passar pela metade:
+- Telemetria (Glean), marketing (Adjust), relatórios de falha (Sentry) e Play Integrity
+  desligados na compilação; as chaves de telemetria e estudos vêm desligadas.
+- Extensões de fábrica instaladas da loja da Mozilla na primeira abertura, sem diálogo só
+  para as que o próprio app pediu (`android/DefaultAddons.kt`). Removida, não volta.
+- DuckDuckGo como buscador padrão, Safe Browsing do Google desligado, proteção contra
+  rastreamento rigorosa, HTTPS em todas as abas e GPC; sem atalhos patrocinados, Pocket,
+  Firefox Suggest e sugestões de busca; sem apresentação inicial nem Termos de Uso da Mozilla.
+- As prefs de `settings/cleanfox.js` entram no GeckoView; `policies.json` não existe no Android.
+- Nome, ID (`io.github.cleanfox`), ícone e wordmarks são do CleanFox. Ainda restam textos
+  "Firefox" em telas secundárias (sincronização, traduções) e nos ícones alternativos.
 - Para que atualizações instalem por cima, o APK precisa ser sempre assinado com a mesma
   chave. Crie um keystore e cadastre os secrets `ANDROID_KEYSTORE_B64`,
   `ANDROID_KEYSTORE_PASSWORD` e `ANDROID_KEY_ALIAS` no repositório; sem eles o CI gera um
@@ -204,7 +207,8 @@ Feito e verificado:
 
 Pendente:
 - [ ] **Compilações de Windows, macOS e Android** (nunca executadas)
-- [ ] Android: buscador, Safe Browsing, tela inicial, extensões de fábrica e debranding completo
+- [ ] Android: debranding dos textos restantes (sincronização, traduções) e ícones alternativos;
+  teste em aparelho real
 - [ ] `application.ini` ainda diz `Vendor=Mozilla`; `pingsender` ainda é empacotado (sem uso, telemetria desligada)
 - [ ] Ícones secundários do Windows/macOS (documento, navegação privativa, instalador) ainda são os genéricos "unofficial"
 - [ ] Patch para remover Normandy e Health Report da compilação (hoje desligados por pref travada)

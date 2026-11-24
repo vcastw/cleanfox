@@ -34,8 +34,10 @@ build, CI e releases.
 - **Ambiente `release` sem regra de proteção.** O workflow já usa o ambiente; restringi-lo
   a tags `v*` (e exigir aprovação) é configuração do repositório, em Settings > Environments.
 - **Windows e macOS sem assinatura de código**; Android sem chave de release definida.
-- **Android:** sem políticas (`policies.json` não existe lá); extensões, buscador e Safe
-  Browsing ainda não são ajustados; nunca compilado.
+- **Android:** os ajustes são edições no código do Fenix (`scripts/prepare-android.sh`) e
+  não há teste automático de runtime (rede, extensões) num aparelho ou emulador. As
+  extensões de fábrica são aprovadas sem diálogo só quando o app as pediu e o ID baixado
+  confere (`android/DefaultAddons.kt`).
 - **Proxies corporativos que inspecionam TLS** não conseguem acessar domínios da Mozilla
   (efeito do modo estrito de fixação). Contorno consciente: mudar a pref para `1`.
 
