@@ -45,4 +45,7 @@ shellcheck -x scripts/*.sh tests/*.sh
 echo "== Python dos testes: sintaxe"
 python3 -m py_compile tests/*.py tools/*.py
 
+echo "== Empacotamento (pacotes falsos)"
+tests/test-package.sh
+
 echo "OK"

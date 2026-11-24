@@ -5,7 +5,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${CLEANFOX_BUILD_DIR:-$ROOT/build}"
 SRC_DIR="$BUILD_DIR/src"
-DIST_DIR="$ROOT/dist"
+DIST_DIR="${CLEANFOX_DIST_DIR:-$ROOT/dist}"
 ARCHIVE="https://archive.mozilla.org/pub/firefox/releases"
 
 log() { printf '\033[1;32m==>\033[0m %s\n' "$*"; }

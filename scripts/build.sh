@@ -29,4 +29,8 @@ if [ "$TARGET" = android ]; then
   ./mach gradle fenix:assembleRelease
 else
   ./mach package
+  if [ "$TARGET" = windows ]; then
+    # `mach package` gera só o .zip; o instalador (setup.exe) é um alvo à parte.
+    ./mach build installer
+  fi
 fi

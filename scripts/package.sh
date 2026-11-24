@@ -22,7 +22,9 @@ collect() { # collect <origem> <nome-final>
 first() { # first <glob...> -> primeiro arquivo existente
   local f
   for f in "$@"; do [ -f "$f" ] && { printf '%s\n' "$f"; return; }; done
-  die "nenhum pacote encontrado (rode scripts/build.sh). Procurado: $*"
+  log "conteúdo de $OBJ/dist:"
+  find "$OBJ/dist" -maxdepth 3 \( -name '*.exe' -o -name '*.zip' -o -name '*.dmg' -o -name '*.tar.*' \) >&2 || true
+  die "nenhum pacote encontrado (rode scripts/build.sh)."
 }
 
 case "$TARGET" in
@@ -35,11 +37,15 @@ case "$TARGET" in
     collect "$pkg" "cleanfox-$VERSION-linux-$ARCH.tar.${pkg##*.}"
     ;;
   windows)
-    collect "$(first "$OBJ"/dist/cleanfox-*.zip)" "cleanfox-$VERSION-windows-$ARCH.zip"
-    collect "$(first "$OBJ"/dist/install/sea/cleanfox-*.exe)" "cleanfox-$VERSION-windows-$ARCH-setup.exe"
+    # Atribuição separada: `die` dentro de "$(...)" não encerraria o script.
+    zip="$(first "$OBJ"/dist/cleanfox-*.zip)"
+    setup="$(first "$OBJ"/dist/install/sea/*.installer.exe "$OBJ"/dist/install/sea/*.exe)"
+    collect "$zip" "cleanfox-$VERSION-windows-$ARCH.zip"
+    collect "$setup" "cleanfox-$VERSION-windows-$ARCH-setup.exe"
     ;;
   macos)
-    collect "$(first "$OBJ"/dist/cleanfox-*.dmg)" "cleanfox-$VERSION-macos-$ARCH.dmg"
+    dmg="$(first "$OBJ"/dist/cleanfox-*.dmg)"
+    collect "$dmg" "cleanfox-$VERSION-macos-$ARCH.dmg"
     ;;
   android)
     apks=("$OBJ"/gradle/build/mobile/android/fenix/app/outputs/apk/release/*.apk)
