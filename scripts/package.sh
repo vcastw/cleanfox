@@ -38,8 +38,11 @@ case "$TARGET" in
     ;;
   windows)
     # Atribuição separada: `die` dentro de "$(...)" não encerraria o script.
-    zip="$(first "$OBJ"/dist/cleanfox-*.zip)"
-    setup="$(first "$OBJ"/dist/install/sea/*.installer.exe "$OBJ"/dist/install/sea/*.exe)"
+    # dist/ também tem cleanfox-*.xpt_artifacts.zip, que vem antes na ordem alfabética.
+    zips=()
+    for z in "$OBJ"/dist/cleanfox-*.zip; do [[ "$z" == *_artifacts.zip ]] || zips+=("$z"); done
+    zip="$(first "${zips[@]}")"
+    setup="$(first "$OBJ"/dist/cleanfox-*.installer.exe)"
     collect "$zip" "cleanfox-$VERSION-windows-$ARCH.zip"
     collect "$setup" "cleanfox-$VERSION-windows-$ARCH-setup.exe"
     ;;
