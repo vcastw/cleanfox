@@ -66,9 +66,17 @@ jobs:
         run: |
           Invoke-WebRequest https://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe -OutFile mb.exe
           Start-Process -Wait -FilePath .\mb.exe -ArgumentList '/S'
+      # Mesmo ambiente que o start-shell.bat do MozillaBuild monta (PATH com Python,
+      # ferramentas e o msys2), sem o shell interativo.
       - name: Compilar
         shell: cmd
-        run: C:\mozilla-build\msys2\usr\bin\bash.exe -lc "cd \"$(cygpath '%GITHUB_WORKSPACE%')\" && scripts/fetch.sh && scripts/prepare.sh && scripts/build.sh && scripts/package.sh"
+        env:
+          MOZILLABUILD: C:\mozilla-build\
+          MSYS2_PATH_TYPE: inherit
+          CHERE_INVOKING: "1"
+        run: |
+          set PATH=C:\mozilla-build\bin;C:\mozilla-build\kdiff3;C:\mozilla-build\python3;C:\mozilla-build\python3\Scripts;C:\mozilla-build\msys2\usr\bin;%PATH%
+          C:\mozilla-build\msys2\usr\bin\bash.exe -lc "cd \"$(cygpath '%GITHUB_WORKSPACE%')\" && scripts/windows-ci.sh"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: cleanfox-windows
