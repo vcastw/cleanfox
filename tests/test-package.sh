@@ -22,8 +22,9 @@ fi
 echo exe > "$dist/cleanfox-153.7.0.en-US.win64.installer.exe"
 "$ROOT/scripts/package.sh" >/dev/null
 for f in cleanfox-153.7.0-windows-x86_64.zip cleanfox-153.7.0-windows-x86_64-setup.exe; do
-  [ -f "$CLEANFOX_DIST_DIR/$f" ] && [ -f "$CLEANFOX_DIST_DIR/$f.sha256" ] \
-    || { echo "FALHA: faltou $f ou o .sha256"; exit 1; }
+  if [ ! -f "$CLEANFOX_DIST_DIR/$f" ] || [ ! -f "$CLEANFOX_DIST_DIR/$f.sha256" ]; then
+    echo "FALHA: faltou $f ou o .sha256"; exit 1
+  fi
 done
 grep -qx zip "$CLEANFOX_DIST_DIR/cleanfox-153.7.0-windows-x86_64.zip" \
   || { echo "FALHA: recolheu o xpt_artifacts.zip no lugar do navegador"; exit 1; }
