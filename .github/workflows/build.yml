@@ -51,6 +51,14 @@ jobs:
           python-version: "3.12"
       - name: GnuPG (conferir a assinatura do código-fonte)
         run: command -v gpgv || brew install gnupg
+      # O rustup do Homebrew no macos-15 não responde a "rustup which" como o mach espera;
+      # usa o rustup oficial em ~/.cargo/bin (instala se o runner não tiver).
+      - name: Rust (rustup oficial)
+        run: |
+          if [ ! -x "$HOME/.cargo/bin/rustup" ]; then
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+          fi
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
       - run: make fetch prepare
       - run: make build
       - run: make package
