@@ -34,6 +34,14 @@ jobs:
       - run: make fetch prepare
       - run: make build
       - run: make package
+      # O pacote só sai se o binário final passar nos testes de runtime.
+      - name: Testar o binário compilado
+        run: |
+          mkdir -p "$RUNNER_TEMP/cf" && tar -xf dist/cleanfox-*-linux-*.tar.xz -C "$RUNNER_TEMP/cf"
+          b="$RUNNER_TEMP/cf/cleanfox/cleanfox"
+          tests/check-runtime.py "$b"
+          tests/check-extensions.py "$b"
+          tests/check-network.py "$b" 120
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: cleanfox-linux
@@ -62,6 +70,15 @@ jobs:
       - run: make fetch prepare
       - run: make build
       - run: make package
+      - name: Testar o binário compilado
+        run: |
+          hdiutil attach dist/cleanfox-*-macos-*.dmg -mountpoint "$RUNNER_TEMP/cfdmg" -nobrowse
+          b="$(find "$RUNNER_TEMP/cfdmg" -maxdepth 4 -path '*Contents/MacOS/cleanfox' | head -1)"
+          test -x "$b"
+          tests/check-runtime.py "$b"
+          tests/check-extensions.py "$b"
+          tests/check-network.py "$b" 120
+          hdiutil detach "$RUNNER_TEMP/cfdmg"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: cleanfox-macos
