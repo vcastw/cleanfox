@@ -54,6 +54,19 @@ if grep -nE 'name: cleanfox-.*unsigned' .github/workflows/build.yml; then
   echo "ERRO: artefato não assinado com nome que casa com cleanfox-*"; exit 1
 fi
 
+# Entradas do disparo manual só por variável de ambiente, nunca dentro de um `run:`
+# (texto interpolado no shell vira injeção de comando).
+python3 - <<'PY'
+import glob, sys, yaml
+ruim = [f"{f}: job {j}: {st.get('name', st['run'][:40])}"
+        for f in glob.glob(".github/workflows/*.yml")
+        for j, job in yaml.safe_load(open(f))["jobs"].items()
+        for st in job.get("steps", [])
+        if "${{" in st.get("run", "") and ("inputs." in st["run"] or "github.event." in st["run"] or "github.ref_name" in st["run"])]
+if ruim:
+    sys.exit("ERRO: expressão controlável por quem dispara dentro de run: (use env:)\n" + "\n".join(ruim))
+PY
+
 echo "== Empacotamento (pacotes falsos)"
 tests/test-package.sh
 
