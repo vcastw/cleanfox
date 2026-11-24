@@ -10,7 +10,7 @@ echo "== cleanfox.js: formato das prefs e duplicadas"
 # Só comentários //, linhas vazias e pref("nome", literal[, locked]); — é o que o
 # pré-processador de prefs do Firefox aceita sem surpresas.
 bad="$(grep -vE '^(//.*)?$' settings/cleanfox.js \
-  | grep -vE '^pref\("[A-Za-z0-9_.-]+", ("[^"]*"|true|false|-?[0-9]+)(, locked)?\);$' || true)"
+  | grep -vE "^pref\\(\"[A-Za-z0-9_.-]+\", (\"[^\"]*\"|'[^']*'|true|false|-?[0-9]+)(, locked)?\\);\$" || true)"
 [ -z "$bad" ] || { echo "linhas fora do formato:"; echo "$bad"; exit 1; }
 dups="$(grep -oE '^pref\("[^"]+"' settings/cleanfox.js | cut -d'"' -f2 | sort | uniq -d)"
 [ -z "$dups" ] || { echo "prefs duplicadas:"; echo "$dups"; exit 1; }

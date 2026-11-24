@@ -27,7 +27,9 @@ def expected_prefs():
     for line in (ROOT / "settings/cleanfox.js").read_text().splitlines():
         m = PREF_RE.match(line)
         if m:
-            prefs.append({"name": m[1], "value": json.loads(m[2]), "locked": bool(m[3])})
+            raw = m[2]
+            value = raw[1:-1] if raw.startswith("'") else json.loads(raw)  # '...' guarda JSON
+            prefs.append({"name": m[1], "value": value, "locked": bool(m[3])})
     return prefs
 
 

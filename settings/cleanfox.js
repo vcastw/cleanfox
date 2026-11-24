@@ -70,9 +70,14 @@ pref("browser.urlbar.speculativeConnect.enabled", false);
 pref("browser.places.speculativeConnect.enabled", false);
 
 // DNS-over-HTTPS: desligado por escolha (5) para o Firefox não ativar sozinho
-// um provedor (Cloudflare) via "rollout". O usuário pode escolher um em Configurações.
+// um provedor via "rollout". O usuário pode ligá-lo em Configurações.
 pref("network.trr.mode", 5);
 pref("doh-rollout.disable-heuristics", true);
+// Quem ligar o DNS criptografado nas Configurações usa o Quad9 (fundação suíça sem fins
+// lucrativos, não registra IP, bloqueia domínios de malware e phishing), não a Cloudflare.
+// A lista do menu vira só o Quad9; "Personalizado" continua disponível.
+pref("network.trr.default_provider_uri", "https://dns.quad9.net/dns-query");
+pref("doh-rollout.provider-list", '[{"UIName":"Quad9","uri":"https://dns.quad9.net/dns-query"}]');
 
 // Serviço de push da Mozilla: sem isto o navegador mantém, desde a inicialização, uma
 // conexão permanente com push.services.mozilla.com identificada por um ID fixo.

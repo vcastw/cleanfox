@@ -50,8 +50,9 @@ ele é um conjunto pequeno e auditável de arquivos aplicado sobre o código-fon
 **Sem big techs por padrão**
 - Buscador padrão DuckDuckGo; Google, Bing, Amazon, eBay e Perplexity removidos.
 - Google Safe Browsing desligado; DRM Widevine (Google) desligado e sem atualização pelo
-  servidor do Google; geolocalização via BeaconDB em vez do Google; DNS-over-HTTPS (Cloudflare)
-  não é ativado sozinho; o codec OpenH264 não é baixado da Cisco.
+  servidor do Google; geolocalização via BeaconDB em vez do Google; o DNS criptografado (DoH) não é
+  ativado sozinho e, quando você o liga, usa o Quad9 (fundação suíça sem fins lucrativos,
+  que bloqueia domínios de malware) em vez da Cloudflare; o codec OpenH264 não é baixado da Cisco.
 - Conta Firefox/Sync desligada por padrão (reativável).
 
 **Minimalista**
