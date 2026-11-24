@@ -42,6 +42,38 @@ actual="$(sha 512 "$TARBALL")"
 log "Extraindo em $SRC_DIR"
 rm -rf "$SRC_DIR"
 mkdir -p "$SRC_DIR"
-tar -xJf "$TARBALL" -C "$SRC_DIR" --strip-components=1
+case "$(uname -s)" in
+  MINGW* | MSYS*) use_python=1 ;;
+  *) use_python="${CLEANFOX_EXTRACT_WITH_PYTHON:-}" ;;
+esac
+if [ -n "$use_python" ]; then
+  # Windows: o tar do msys2 falha ao criar o processo do xz (fork). O Python extrai sem
+  # criar processos; o filtro "data" recusa caminhos absolutos e fora do destino.
+  dest="$SRC_DIR"
+  command -v cygpath >/dev/null && dest="$(cygpath -w "$SRC_DIR")"
+  python3 - "$TARBALL" "$dest" <<'PY'
+import sys
+import tarfile
+
+src, dest = sys.argv[1], sys.argv[2]
+
+
+def strip_first(members):
+    for m in members:
+        _, _, rest = m.name.partition("/")
+        if not rest:
+            continue
+        m.name = rest
+        if m.islnk():
+            m.linkname = m.linkname.partition("/")[2]
+        yield m
+
+
+with tarfile.open(src, "r:xz") as t:
+    t.extractall(dest, members=strip_first(t), filter="data")
+PY
+else
+  tar -xJf "$TARBALL" -C "$SRC_DIR" --strip-components=1
+fi
 printf '%s\n' "$VERSION" > "$SRC_DIR/.cleanfox-version"
 log "Fonte do Firefox $VERSION pronta"
