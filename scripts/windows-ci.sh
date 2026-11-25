@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Compilação do CleanFox para Windows dentro do shell do MozillaBuild (usado pelo CI).
+# Compilação do ColdFox para Windows dentro do shell do MozillaBuild (usado pelo CI).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

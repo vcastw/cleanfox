@@ -1,17 +1,17 @@
-# CleanFox — opções de compilação para todas as plataformas.
+# ColdFox — opções de compilação para todas as plataformas.
 # Variáveis de ambiente:
-#   CLEANFOX_TARGET        linux | windows | macos | android (definida pelos scripts)
-#   CLEANFOX_ANDROID_ABI   aarch64 (padrão) | armv7 | x86_64
-#   CLEANFOX_FAST_BUILD=1  desliga LTO (compila mais rápido e com menos RAM; binário mais lento)
-#   CLEANFOX_PGO=1         liga PGO no desktop (binário mais rápido; a compilação roda duas vezes)
+#   COLDFOX_TARGET        linux | windows | macos | android (definida pelos scripts)
+#   COLDFOX_ANDROID_ABI   aarch64 (padrão) | armv7 | x86_64
+#   COLDFOX_FAST_BUILD=1  desliga LTO (compila mais rápido e com menos RAM; binário mais lento)
+#   COLDFOX_PGO=1         liga PGO no desktop (binário mais rápido; a compilação roda duas vezes)
 
-mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-cleanfox
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-coldfox
 
 # --- Sem telemetria / coleta ---
 # MOZILLA_OFFICIAL não é definido de propósito: sem ele MOZ_TELEMETRY_REPORTING fica
 # desligado e o código de envio de telemetria do Gecko não é compilado.
 # Normandy (estudos) e Health Report são impostos por browser/moz.configure e não dá
-# para removê-los por aqui; ficam desligados por prefs travadas em settings/cleanfox.js.
+# para removê-los por aqui; ficam desligados por prefs travadas em settings/coldfox.js.
 ac_add_options --disable-crashreporter
 
 # --- Segurança ---
@@ -30,7 +30,7 @@ ac_add_options --disable-tests
 ac_add_options --enable-strip
 ac_add_options --enable-install-strip
 
-case "$CLEANFOX_TARGET" in
+case "$COLDFOX_TARGET" in
   android)
     # Android: GeckoView + Fenix. Nome, ID e arte do app são tratados em
     # scripts/prepare-android.sh (ficam no Gradle, não aqui).
@@ -38,7 +38,7 @@ case "$CLEANFOX_TARGET" in
     ac_add_options --with-branding=mobile/android/branding/unofficial
     # Menos tarefas em paralelo: Gradle + Rust + C++ juntos estouram a memória do runner.
     mk_add_options MOZ_PARALLEL_BUILD=3
-    case "${CLEANFOX_ANDROID_ABI:-aarch64}" in
+    case "${COLDFOX_ANDROID_ABI:-aarch64}" in
       aarch64) ac_add_options --target=aarch64-linux-android ;;
       armv7) ac_add_options --target=arm-linux-androideabi ;;
       x86_64) ac_add_options --target=x86_64-linux-android ;;
@@ -48,12 +48,12 @@ case "$CLEANFOX_TARGET" in
     ac_add_options --enable-application=browser
 
     # Identidade: nada de marca Firefox, perfil separado do Firefox instalado.
-    ac_add_options --with-app-name=cleanfox
-    ac_add_options --with-app-basename=CleanFox
-    ac_add_options --with-branding=browser/branding/cleanfox
-    ac_add_options --with-distribution-id=io.github.cleanfox
+    ac_add_options --with-app-name=coldfox
+    ac_add_options --with-app-basename=ColdFox
+    ac_add_options --with-branding=browser/branding/coldfox
+    ac_add_options --with-distribution-id=io.github.coldfox
 
-    # Sem atualizador da Mozilla: atualizações vêm dos releases do CleanFox.
+    # Sem atualizador da Mozilla: atualizações vêm dos releases do ColdFox.
     ac_add_options --disable-updater
 
     # Fora da compilação: controle parental do sistema operacional e a varredura de
@@ -61,16 +61,16 @@ case "$CLEANFOX_TARGET" in
     ac_add_options --disable-parental-controls
     ac_add_options --disable-necko-wifi
 
-    if [ -z "$CLEANFOX_FAST_BUILD" ]; then
+    if [ -z "$COLDFOX_FAST_BUILD" ]; then
       ac_add_options --enable-lto=cross
     fi
-    if [ -n "$CLEANFOX_PGO" ]; then
+    if [ -n "$COLDFOX_PGO" ]; then
       ac_add_options MOZ_PGO=1
     fi
     ;;
 esac
 
-if [ "$CLEANFOX_TARGET" = windows ]; then
+if [ "$COLDFOX_TARGET" = windows ]; then
   # Serviços residentes do Windows: atualização em segundo plano e o agente que
   # reporta à Mozilla qual é o navegador padrão.
   ac_add_options --disable-maintenance-service

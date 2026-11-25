@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Instala a configuração do CleanFox num Firefox desktop já instalado (Linux, Windows
+# Instala a configuração do ColdFox num Firefox desktop já instalado (Linux, Windows
 # ou macOS), sem compilar nada. Passe a pasta da instalação:
 #   Linux:   scripts/apply-config.sh /usr/lib/firefox
 #   macOS:   scripts/apply-config.sh /Applications/Firefox.app
@@ -14,6 +14,6 @@ APP_DIR="${1:-}"
 [ -f "$APP_DIR/application.ini" ] || die "$APP_DIR não parece uma instalação do Firefox (application.ini ausente)"
 
 mkdir -p "$APP_DIR/browser/defaults/preferences" "$APP_DIR/distribution"
-cp "$ROOT/settings/cleanfox.js" "$APP_DIR/browser/defaults/preferences/cleanfox.js"
+cp "$ROOT/settings/coldfox.js" "$APP_DIR/browser/defaults/preferences/coldfox.js"
 cp "$ROOT/settings/policies.json" "$APP_DIR/distribution/policies.json"
 log "Configuração instalada em $APP_DIR (reinicie o navegador)"

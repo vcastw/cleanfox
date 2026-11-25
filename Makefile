@@ -1,6 +1,6 @@
 # Alvo: make TARGET=linux|windows|macos|android (padrão: o sistema atual)
 ifdef TARGET
-export CLEANFOX_TARGET := $(TARGET)
+export COLDFOX_TARGET := $(TARGET)
 endif
 
 .PHONY: all fetch prepare build package lint branding clean

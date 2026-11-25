@@ -3,9 +3,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BUILD_DIR="${CLEANFOX_BUILD_DIR:-$ROOT/build}"
+BUILD_DIR="${COLDFOX_BUILD_DIR:-$ROOT/build}"
 SRC_DIR="$BUILD_DIR/src"
-DIST_DIR="${CLEANFOX_DIST_DIR:-$ROOT/dist}"
+DIST_DIR="${COLDFOX_DIST_DIR:-$ROOT/dist}"
 ARCHIVE="https://archive.mozilla.org/pub/firefox/releases"
 
 log() { printf '\033[1;32m==>\033[0m %s\n' "$*"; }
@@ -21,12 +21,12 @@ host_target() {
     *) die "sistema não suportado: $(uname -s)" ;;
   esac
 }
-TARGET="${CLEANFOX_TARGET:-$(host_target)}"
+TARGET="${COLDFOX_TARGET:-$(host_target)}"
 case "$TARGET" in
   linux | windows | macos | android) ;;
-  *) die "CLEANFOX_TARGET inválido: $TARGET (use linux, windows, macos ou android)" ;;
+  *) die "COLDFOX_TARGET inválido: $TARGET (use linux, windows, macos ou android)" ;;
 esac
-export CLEANFOX_TARGET="$TARGET"
+export COLDFOX_TARGET="$TARGET"
 
 # Desktop usa o Firefox ESR (arquivo `version`). O Android não tem ESR: usa a versão
 # estável atual (arquivo `version-android`). Cada alvo tem sua própria árvore de fontes.

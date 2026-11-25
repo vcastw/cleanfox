@@ -3,12 +3,12 @@
 TODA conexão que ele abre (um proxy local anota o destino de cada CONNECT/GET).
 
 Falha se aparecer um host fora de tests/allowed-hosts.txt — cada host lá tem o motivo.
-Uso: tests/check-network.py /caminho/para/cleanfox [segundos] [--also-allow HOST ...]
-     (padrão: 120 s). --also-allow é para quando o binário testado não é o CleanFox
+Uso: tests/check-network.py /caminho/para/coldfox [segundos] [--also-allow HOST ...]
+     (padrão: 120 s). --also-allow é para quando o binário testado não é o ColdFox
      (ex.: o Firefox oficial com a configuração aplicada, que tem o atualizador da Mozilla).
 
 Se a máquina já sai por um proxy (HTTPS_PROXY), o teste encadeia nele. Se esse proxy
-intercepta TLS, aponte CLEANFOX_TEST_EXTRA_CA para a CA dele (como em check-extensions.py).
+intercepta TLS, aponte COLDFOX_TEST_EXTRA_CA para a CA dele (como em check-extensions.py).
 """
 import asyncio
 import os
@@ -98,7 +98,7 @@ def main():
             "network.proxy.ssl": "127.0.0.1", "network.proxy.ssl_port": port,
             "network.proxy.no_proxies_on": "", "network.proxy.allow_hijacking_localhost": True,
         }
-        extra_ca = os.environ.get("CLEANFOX_TEST_EXTRA_CA")
+        extra_ca = os.environ.get("COLDFOX_TEST_EXTRA_CA")
         if extra_ca:
             db = f"sql:{profile}"
             subprocess.run(["certutil", "-N", "--empty-password", "-d", db], check=True)

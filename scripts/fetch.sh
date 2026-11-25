@@ -44,7 +44,7 @@ rm -rf "$SRC_DIR"
 mkdir -p "$SRC_DIR"
 case "$(uname -s)" in
   MINGW* | MSYS*) use_python=1 ;;
-  *) use_python="${CLEANFOX_EXTRACT_WITH_PYTHON:-}" ;;
+  *) use_python="${COLDFOX_EXTRACT_WITH_PYTHON:-}" ;;
 esac
 if [ -n "$use_python" ]; then
   # Windows: o tar do msys2 falha ao criar o processo do xz (fork). O Python extrai sem
@@ -75,5 +75,5 @@ PY
 else
   tar -xJf "$TARBALL" -C "$SRC_DIR" --strip-components=1
 fi
-printf '%s\n' "$VERSION" > "$SRC_DIR/.cleanfox-version"
+printf '%s\n' "$VERSION" > "$SRC_DIR/.coldfox-version"
 log "Fonte do Firefox $VERSION pronta"

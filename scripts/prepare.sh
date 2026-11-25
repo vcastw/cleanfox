@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# Aplica branding, configuração, patches e mozconfig do CleanFox sobre a árvore de fontes.
+# Aplica branding, configuração, patches e mozconfig do ColdFox sobre a árvore de fontes.
 # shellcheck source=scripts/common.sh
 source "$(dirname "$0")/common.sh"
 need patch
 
-[ -f "$SRC_DIR/.cleanfox-version" ] || die "fonte não encontrada em $SRC_DIR (rode scripts/fetch.sh)"
-[ ! -f "$SRC_DIR/.cleanfox-prepared" ] || die "fonte já preparada; rode scripts/fetch.sh para recomeçar de uma árvore limpa"
+[ -f "$SRC_DIR/.coldfox-version" ] || die "fonte não encontrada em $SRC_DIR (rode scripts/fetch.sh)"
+[ ! -f "$SRC_DIR/.coldfox-prepared" ] || die "fonte já preparada; rode scripts/fetch.sh para recomeçar de uma árvore limpa"
 
 # Remove comentários e linhas vazias: os arquivos de prefs do Firefox passam por um
 # pré-processador, e assim só entram neles linhas pref(...) simples.
 prefs_block() {
   echo
-  echo "// ---- CleanFox (gerado de settings/cleanfox.js) ----"
-  grep -E '^pref\(' "$ROOT/settings/cleanfox.js"
+  echo "// ---- ColdFox (gerado de settings/coldfox.js) ----"
+  grep -E '^pref\(' "$ROOT/settings/coldfox.js"
 }
 
 apply_patches() {
@@ -33,9 +33,9 @@ if [ "$TARGET" = android ]; then
 else
   log "Branding"
   # Base: o branding "unofficial" do próprio Firefox (ícones genéricos, sem marcas registradas).
-  rm -rf "$SRC_DIR/browser/branding/cleanfox"
-  cp -r "$SRC_DIR/browser/branding/unofficial" "$SRC_DIR/browser/branding/cleanfox"
-  cp -r "$ROOT/branding/." "$SRC_DIR/browser/branding/cleanfox/"
+  rm -rf "$SRC_DIR/browser/branding/coldfox"
+  cp -r "$SRC_DIR/browser/branding/unofficial" "$SRC_DIR/browser/branding/coldfox"
+  cp -r "$ROOT/branding/." "$SRC_DIR/browser/branding/coldfox/"
 
   log "Prefs e políticas"
   prefs_block >> "$SRC_DIR/browser/app/profile/firefox.js"
@@ -47,4 +47,4 @@ fi
 
 log "mozconfig"
 cp "$ROOT/mozconfig" "$SRC_DIR/mozconfig"
-touch "$SRC_DIR/.cleanfox-prepared"
+touch "$SRC_DIR/.coldfox-prepared"

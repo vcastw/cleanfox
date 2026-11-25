@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Teste de runtime: sobe um Firefox/CleanFox real (headless) que já tenha a
+"""Teste de runtime: sobe um Firefox/ColdFox real (headless) que já tenha a
 configuração aplicada e confere, via Marionette, que:
 
-  * toda pref de settings/cleanfox.js tem o valor esperado (e está travada, se `locked`);
+  * toda pref de settings/coldfox.js tem o valor esperado (e está travada, se `locked`);
   * as políticas de policies.json estão ativas e foram aceitas sem erro.
 
 Uso: tests/check-runtime.py /caminho/para/firefox   (o executável)
@@ -24,7 +24,7 @@ PREF_RE = re.compile(r'^pref\("([^"]+)", (.+?)(, locked)?\);$')
 
 def expected_prefs():
     prefs = []
-    for line in (ROOT / "settings/cleanfox.js").read_text().splitlines():
+    for line in (ROOT / "settings/coldfox.js").read_text().splitlines():
         m = PREF_RE.match(line)
         if m:
             raw = m[2]

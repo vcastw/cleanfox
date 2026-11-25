@@ -19,7 +19,7 @@ permissions:
 
 env:
   # Runners gratuitos têm pouca RAM e disco: sem LTO.
-  CLEANFOX_FAST_BUILD: "1"
+  COLDFOX_FAST_BUILD: "1"
 
 jobs:
   linux:
@@ -40,14 +40,14 @@ jobs:
       # O pacote só sai se o binário final passar nos testes de runtime.
       - name: Testar o binário compilado
         run: |
-          mkdir -p "$RUNNER_TEMP/cf" && tar -xf dist/cleanfox-*-linux-*.tar.xz -C "$RUNNER_TEMP/cf"
-          b="$RUNNER_TEMP/cf/cleanfox/cleanfox"
+          mkdir -p "$RUNNER_TEMP/cf" && tar -xf dist/coldfox-*-linux-*.tar.xz -C "$RUNNER_TEMP/cf"
+          b="$RUNNER_TEMP/cf/coldfox/coldfox"
           tests/check-runtime.py "$b"
           tests/check-extensions.py "$b"
           tests/check-network.py "$b" 120
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: cleanfox-linux
+          name: coldfox-linux
           path: dist/*
 
   macos:
@@ -75,8 +75,8 @@ jobs:
       - run: make package
       - name: Testar o binário compilado
         run: |
-          hdiutil attach dist/cleanfox-*-macos-*.dmg -mountpoint "$RUNNER_TEMP/cfdmg" -nobrowse
-          b="$(find "$RUNNER_TEMP/cfdmg" -maxdepth 4 -path '*Contents/MacOS/cleanfox' | head -1)"
+          hdiutil attach dist/coldfox-*-macos-*.dmg -mountpoint "$RUNNER_TEMP/cfdmg" -nobrowse
+          b="$(find "$RUNNER_TEMP/cfdmg" -maxdepth 4 -path '*Contents/MacOS/coldfox' | head -1)"
           test -x "$b"
           tests/check-runtime.py "$b"
           tests/check-extensions.py "$b"
@@ -84,7 +84,7 @@ jobs:
           hdiutil detach "$RUNNER_TEMP/cfdmg"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: cleanfox-macos
+          name: coldfox-macos
           path: dist/*
 
   windows:
@@ -92,9 +92,9 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 350
     env:
-      CLEANFOX_TARGET: windows
+      COLDFOX_TARGET: windows
       # Caminho curto: a árvore do Firefox estoura o limite de 260 caracteres do Windows.
-      CLEANFOX_BUILD_DIR: /c/cf
+      COLDFOX_BUILD_DIR: /c/cf
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Instalar MozillaBuild
@@ -115,7 +115,7 @@ jobs:
           C:\mozilla-build\msys2\usr\bin\bash.exe -lc "cd \"$(cygpath '%GITHUB_WORKSPACE%')\" && scripts/windows-ci.sh"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: cleanfox-windows
+          name: coldfox-windows
           path: dist/*
 
   android:
@@ -123,7 +123,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 350
     env:
-      CLEANFOX_TARGET: android
+      COLDFOX_TARGET: android
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       # O mach da Mozilla só suporta Python até 3.12; o Python do runner pode ser mais novo.
@@ -182,7 +182,7 @@ jobs:
           rm -f "$RUNNER_TEMP/release.jks" dist/*.idsig
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: cleanfox-android
+          name: coldfox-android
           path: dist/*
 
   release:
@@ -198,13 +198,13 @@ jobs:
         with:
           # Só os artefatos finais: "unsigned-android" tem os mesmos nomes de arquivo do
           # APK assinado e, baixado junto, poderia sobrescrevê-lo.
-          pattern: cleanfox-*
+          pattern: coldfox-*
           path: dist
           merge-multiple: true
       # Quem baixar confere com: gh attestation verify <arquivo> -R ${{ github.repository }}
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
-          subject-path: "dist/cleanfox-*"
+          subject-path: "dist/coldfox-*"
       # v0.x sai como pré-lançamento.
       # No disparo manual a tag vem do campo release_tag e é criada aqui, no commit compilado.
       - run: |

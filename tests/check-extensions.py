@@ -3,9 +3,9 @@
 COM rede) e espera cada extensão de ExtensionSettings ser baixada e instalada.
 
 Confere que cada uma está instalada, ativa, assinada pela Mozilla e liberada em janela
-privativa. Uso: tests/check-extensions.py /caminho/para/firefox-ou-cleanfox
+privativa. Uso: tests/check-extensions.py /caminho/para/firefox-ou-coldfox
 
-Atrás de um proxy que intercepta TLS, aponte CLEANFOX_TEST_EXTRA_CA para a CA dele: ela é
+Atrás de um proxy que intercepta TLS, aponte COLDFOX_TEST_EXTRA_CA para a CA dele: ela é
 confiada só no perfil temporário do teste, que também sai do modo estrito de fixação de
 certificados (requer `certutil`, do pacote NSS tools).
 """
@@ -52,12 +52,12 @@ def main():
 
     with tempfile.TemporaryDirectory() as profile:
         Path(profile, "user.js").write_text('user_pref("remote.prefs.recommended", false);\n')
-        extra_ca = os.environ.get("CLEANFOX_TEST_EXTRA_CA")
+        extra_ca = os.environ.get("COLDFOX_TEST_EXTRA_CA")
         if extra_ca:
             db = f"sql:{profile}"
             subprocess.run(["certutil", "-N", "--empty-password", "-d", db], check=True)
             subprocess.run(["certutil", "-A", "-n", "test-extra-ca", "-t", "C,,", "-i", extra_ca, "-d", db], check=True)
-            # O CleanFox fixa os certificados de domínios da Mozilla no modo estrito (2), que
+            # O ColdFox fixa os certificados de domínios da Mozilla no modo estrito (2), que
             # recusa justamente uma CA de interceptação. Só neste perfil de teste: modo 1.
             with open(Path(profile, "user.js"), "a") as f:
                 f.write('user_pref("security.cert_pinning.enforcement_level", 1);\n')

@@ -8,7 +8,7 @@ Arquivos `*.patch` são aplicados sobre o código-fonte do Firefox em ordem alfa
 
 Regras:
 
-- **Patch é o último recurso.** Se dá para resolver com pref (`settings/cleanfox.js`),
+- **Patch é o último recurso.** Se dá para resolver com pref (`settings/coldfox.js`),
   política (`settings/policies.json`) ou opção de build (`mozconfig`), faça lá.
   Cada patch precisa ser conferido a cada nova versão do Firefox (o CI semanal avisa).
 - Um patch = uma mudança. O texto antes do primeiro `---` explica o motivo.

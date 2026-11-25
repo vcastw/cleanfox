@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Gera os ícones e wordmarks do CleanFox em branding/ a partir de branding/logo.svg.
+"""Gera os ícones e wordmarks do ColdFox em branding/ a partir de branding/logo.svg.
 
 Os arquivos gerados ficam commitados; rode de novo só se o logo mudar.
 Requer Pillow, CairoSVG e a fonte DejaVu Sans Bold:  python3 tools/gen-branding.py
@@ -13,9 +13,9 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
 LOGO = ROOT / "branding/logo.svg"
-INK = (28, 27, 34, 255)  # fundo escuro dos ícones do Android: o logo tem partes brancas
-INK_HEX = "#1C1B22"
-ORANGE = (254, 99, 1, 255)  # texto dos wordmarks: legível em tema claro e escuro
+INK = (11, 20, 38, 255)  # fundo escuro dos ícones do Android: o logo tem partes brancas
+INK_HEX = "#0B1426"
+BLUE = (20, 140, 255, 255)  # texto dos wordmarks: legível em tema claro e escuro
 FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 SS = 4  # supersampling das formas de fundo
 
@@ -43,7 +43,7 @@ def logo(size, shape="none"):
     return im
 
 
-def text_image(width, height, text="CleanFox", icon=False):
+def text_image(width, height, text="ColdFox", icon=False):
     """Wordmark: texto (com o ícone à esquerda, se icon=True) centralizado em width x height."""
     im = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
@@ -60,7 +60,7 @@ def text_image(width, height, text="CleanFox", icon=False):
     x = (width - total) // 2
     if icon:
         im.alpha_composite(logo(height), (x, 0))
-    d.text((x + icon_w + gap - left, (height - (bottom - top)) // 2 - top), text, font=font, fill=ORANGE)
+    d.text((x + icon_w + gap - left, (height - (bottom - top)) // 2 - top), text, font=font, fill=BLUE)
     return im
 
 
@@ -75,23 +75,40 @@ def search_widget(width, height):
 
 
 def vector_foreground():
-    """Ícone adaptativo do Android: os paths do SVG (viewBox 512) na zona segura de 108x108."""
-    paths = re.findall(r'<path fill="(#[0-9A-Fa-f]{6})" fill-rule="evenodd" d="([^"]+)"', LOGO.read_text())
-    assert paths, "nenhum <path> encontrado em logo.svg"
+    """Ícone adaptativo do Android: os paths e degradês do SVG (viewBox 512) na zona segura de 108x108."""
+    svg = LOGO.read_text()
+    grads = {}
+    for gid, x1, y1, x2, y2, stops in re.findall(
+        r'<linearGradient id="(\w+)" gradientUnits="userSpaceOnUse" x1="([\d.-]+)" y1="([\d.-]+)" x2="([\d.-]+)" y2="([\d.-]+)">(.*?)</linearGradient>', svg
+    ):
+        items = "".join(
+            f'\n            <item android:offset="{off}" android:color="#FF{color[1:]}" />'
+            for off, color in re.findall(r'<stop offset="([\d.]+)" stop-color="(#[0-9A-Fa-f]{6})"/>', stops)
+        )
+        grads[gid] = (
+            '      <aapt:attr name="android:fillColor">\n'
+            f'        <gradient android:type="linear" android:startX="{x1}" android:startY="{y1}" android:endX="{x2}" android:endY="{y2}">'
+            f"{items}\n        </gradient>\n      </aapt:attr>\n"
+        )
+    paths = re.findall(r'<path fill="(#[0-9A-Fa-f]{6}|url\(#\w+\))" fill-rule="evenodd" d="([^"]+)"/>', svg)
+    assert paths and len(paths) == svg.count("<path"), "paths de logo.svg fora do formato esperado"
     scale = 60 / 512
-    body = "\n".join(
-        f'    <path android:fillColor="{color}" android:fillType="evenOdd" android:pathData="{d}" />'
-        for color, d in paths
-    )
+    body = ""
+    for fill, d in paths:
+        if fill.startswith("#"):
+            body += f'    <path android:fillColor="{fill}" android:fillType="evenOdd" android:pathData="{d}" />\n'
+        else:
+            body += f'    <path android:fillType="evenOdd" android:pathData="{d}">\n{grads[fill[5:-1]]}    </path>\n'
     return (
         '<?xml version="1.0" encoding="utf-8"?>\n'
         "<!-- Gerado por tools/gen-branding.py a partir de branding/logo.svg -->\n"
         '<vector xmlns:android="http://schemas.android.com/apk/res/android"\n'
+        '    xmlns:aapt="http://schemas.android.com/aapt"\n'
         '    android:width="108dp"\n    android:height="108dp"\n'
         '    android:viewportWidth="108"\n    android:viewportHeight="108">\n'
         f'  <group android:translateX="24" android:translateY="24" android:scaleX="{scale:.6f}" android:scaleY="{scale:.6f}">\n'
         + body
-        + "\n  </group>\n</vector>\n"
+        + "  </group>\n</vector>\n"
     )
 
 

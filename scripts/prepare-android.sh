@@ -42,13 +42,13 @@ for flag in ("CRASH_REPORTING", "TELEMETRY"):
     block = block.replace(old, f"buildConfigField 'boolean', '{flag}', 'false'")
 text = text[:start] + block + text[end:]
 
-# 2. ID do app: io.github.cleanfox (instala lado a lado com o Firefox, sem sharedUserId dele).
+# 2. ID do app: io.github.coldfox (instala lado a lado com o Firefox, sem sharedUserId dele).
 start = text.index("release releaseTemplate >> {")
 end = text.index("benchmark releaseTemplate >> {")
 block = text[start:end]
 for old, new in (
-    ('applicationIdSuffix ".firefox"', 'applicationIdSuffix ".cleanfox"'),
-    ('"sharedUserId": "org.mozilla.firefox.sharedID"', '"sharedUserId": "io.github.cleanfox.sharedID"'),
+    ('applicationIdSuffix ".firefox"', 'applicationIdSuffix ".coldfox"'),
+    ('"sharedUserId": "org.mozilla.firefox.sharedID"', '"sharedUserId": "io.github.coldfox.sharedID"'),
 ):
     if block.count(old) != 1:
         sys.exit(f"erro: {old!r} não encontrado no build type release")
@@ -61,7 +61,7 @@ edit(gradle, [('applicationId "org.mozilla"', 'applicationId "io.github"', 1)])
 edit(
     fenix / "src/release/res/values/static_strings.xml",
     [('<string name="app_name" translatable="false">Firefox</string>',
-      '<string name="app_name" translatable="false">CleanFox</string>', 1)],
+      '<string name="app_name" translatable="false">ColdFox</string>', 1)],
 )
 PY
 
@@ -127,14 +127,14 @@ edit(fenix / "res/xml/tracking_protection_preferences.xml", [
 ])
 
 # Sem apresentação inicial (como no desktop): ela traz consentimentos de telemetria e
-# marketing da Mozilla e os Termos de Uso do Firefox, que não se aplicam ao CleanFox.
+# marketing da Mozilla e os Termos de Uso do Firefox, que não se aplicam ao ColdFox.
 edit(fenix / "java/org/mozilla/fenix/utils/Settings.kt", [
     ("val shouldShowByDefaultConditions = featureEnabled && !hasUserBeenOnboarded",
-     "val shouldShowByDefaultConditions = false // CleanFox: sem apresentação inicial", 1),
+     "val shouldShowByDefaultConditions = false // ColdFox: sem apresentação inicial", 1),
 ])
 edit(fenix / "java/org/mozilla/fenix/termsofuse/store/TermsOfUsePromptRepository.kt", [
     ("override fun canShowTermsOfUsePrompt(): Boolean =\n        !settings.hasAcceptedTermsOfService &&",
-     "override fun canShowTermsOfUsePrompt(): Boolean =\n        false && // CleanFox: Termos de Uso da Mozilla não se aplicam\n"
+     "override fun canShowTermsOfUsePrompt(): Boolean =\n        false && // ColdFox: Termos de Uso da Mozilla não se aplicam\n"
      "            !settings.hasAcceptedTermsOfService &&", 1),
 ])
 
@@ -157,7 +157,7 @@ edit(ac / "feature/search/src/main/java/mozilla/components/feature/search/middle
 edit(ac / "support/webextensions/src/main/java/mozilla/components/support/webextensions/WebExtensionSupport.kt", [
     ("object WebExtensionSupport {\n",
      "object WebExtensionSupport {\n"
-     "    /** CleanFox: aprova sem diálogo instalações iniciadas pelo próprio app; null = perguntar. */\n"
+     "    /** ColdFox: aprova sem diálogo instalações iniciadas pelo próprio app; null = perguntar. */\n"
      "    @Volatile\n"
      "    var installPermissionInterceptor: ((WebExtension) -> PermissionPromptResponse?)? = null\n\n", 1),
     ("                    onConfirm: (PermissionPromptResponse) -> Unit,\n                ) {\n"
@@ -176,18 +176,18 @@ edit(ac / "support/webextensions/src/main/java/mozilla/components/support/webext
 edit(fenix / "java/org/mozilla/fenix/FenixApplication.kt", [
     ("                    subscribeForNewAddonsIfNeeded(components.supportedAddonsChecker, extensions)\n",
      "                    subscribeForNewAddonsIfNeeded(components.supportedAddonsChecker, extensions)\n"
-     "                    org.mozilla.fenix.cleanfox.DefaultAddons.installIfNeeded(\n"
+     "                    org.mozilla.fenix.coldfox.DefaultAddons.installIfNeeded(\n"
      "                        this,\n"
      "                        components.addonManager,\n"
      "                        extensions,\n"
      "                    )\n", 1),
 ])
-dest = fenix / "java/org/mozilla/fenix/cleanfox"
+dest = fenix / "java/org/mozilla/fenix/coldfox"
 dest.mkdir(parents=True, exist_ok=True)
 shutil.copy(ours / "DefaultAddons.kt", dest / "DefaultAddons.kt")
 PY
 
-log "Fenix: arte do CleanFox"
+log "Fenix: arte do ColdFox"
 RES="$FENIX/src/release/res"
 # Toda imagem de marca da variante release precisa ter substituta nossa; se uma versão
 # nova do Firefox trouxer arte que não cobrimos, paramos aqui em vez de distribuí-la.

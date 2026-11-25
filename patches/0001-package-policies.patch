@@ -9,7 +9,7 @@ settings/policies.json por scripts/prepare.sh.
          "distribution.ini",
      ]
 +
-+# CleanFox: políticas embutidas na instalação (copiado por scripts/prepare.sh).
++# ColdFox: políticas embutidas na instalação (copiado por scripts/prepare.sh).
 +FINAL_TARGET_FILES.distribution += [
 +    "policies.json",
 +]
@@ -20,5 +20,5 @@ settings/policies.json por scripts/prepare.sh.
  @RESPATH@/distribution/*
  #endif
 +
-+; CleanFox: políticas embutidas na instalação.
++; ColdFox: políticas embutidas na instalação.
 +@RESPATH@/distribution/policies.json

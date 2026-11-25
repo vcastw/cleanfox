@@ -1,4 +1,4 @@
-# Segurança do CleanFox
+# Segurança do ColdFox
 
 ## Reportar uma vulnerabilidade
 
@@ -6,8 +6,8 @@
 **Report a vulnerability**. Responderemos assim que possível.
 
 Falhas do próprio Firefox (motor, JavaScript, rede) devem ser reportadas à Mozilla em
-<https://www.mozilla.org/security/>; o CleanFox recebe a correção ao atualizar a base.
-Aqui cabem falhas do que o CleanFox muda: configuração, extensões de fábrica, scripts de
+<https://www.mozilla.org/security/>; o ColdFox recebe a correção ao atualizar a base.
+Aqui cabem falhas do que o ColdFox muda: configuração, extensões de fábrica, scripts de
 build, CI e releases.
 
 ## Controles e o que prova cada um
@@ -15,7 +15,7 @@ build, CI e releases.
 | Fronteira | Controle | Prova |
 |---|---|---|
 | Código-fonte do Firefox baixado | `SHA512SUMS` assinado pela chave de release da Mozilla, guardada em `keys/` com impressão digital fixada em `scripts/fetch.sh`; depois SHA-512 do tarball. Falha fechado. | Testado manualmente: `SHA512SUMS` adulterado e assinatura válida de outra chave são recusados. `tests/lint.sh` confere que `keys/` é a chave fixada. |
-| CI e releases | Actions fixadas por SHA; permissões mínimas (`contents: read`); só o job de release escreve. Assinatura do APK em job separado, sem código de terceiros, no ambiente `release`. Releases com atestado de procedência (Sigstore), publicados por tag `v*` ou por disparo manual com `release_tag` (nome validado, passado por variável de ambiente); o job de release baixa só os artefatos finais (`cleanfox-*`). | `tests/lint.sh` recusa action sem SHA, entrada de disparo interpolada em `run:` e artefato não assinado que case com `cleanfox-*`. Conferir um download: `gh attestation verify <arquivo> -R vcastw/cleanfox`. |
+| CI e releases | Actions fixadas por SHA; permissões mínimas (`contents: read`); só o job de release escreve. Assinatura do APK em job separado, sem código de terceiros, no ambiente `release`. Releases com atestado de procedência (Sigstore), publicados por tag `v*` ou por disparo manual com `release_tag` (nome validado, passado por variável de ambiente); o job de release baixa só os artefatos finais (`coldfox-*`). | `tests/lint.sh` recusa action sem SHA, entrada de disparo interpolada em `run:` e artefato não assinado que case com `coldfox-*`. Conferir um download: `gh attestation verify <arquivo> -R vcastw/coldfox`. |
 | Coleta de dados | Telemetria, estudos, relatórios de falha e atribuição de anúncios desligados e travados; código de envio de telemetria e crash reporter fora da compilação. | `tests/check-runtime.py` sobe o navegador e confere cada pref (e trava) e política. |
 | Conexões em segundo plano | Só hosts listados, com motivo, em `tests/allowed-hosts.txt`. | `tests/check-network.py` registra toda conexão de um perfil novo parado por 2 min e falha com host desconhecido. Roda no CI. |
 | Extensões de fábrica | uBlock Origin, Privacy Badger e Decentraleyes da AMO, com assinatura da Mozilla obrigatória; usuário pode removê-las. | `tests/check-extensions.py` confere instaladas, ativas, assinadas e liberadas em janela privativa. |
@@ -23,7 +23,7 @@ build, CI e releases.
 
 ## Lacunas conhecidas
 
-- **Sem atualizador automático.** O maior risco: o CleanFox só recebe correções de
+- **Sem atualizador automático.** O maior risco: o ColdFox só recebe correções de
   segurança quando um release novo é publicado e instalado. Ainda não há releases.
 - **Google Safe Browsing desligado.** Menos proteção contra phishing e malware; as listas
   do uBlock Origin cobrem só parte.

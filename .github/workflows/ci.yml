@@ -33,7 +33,7 @@ jobs:
       - run: tests/check-runtime.py firefox/firefox
       - name: Extensões de fábrica instalam
         run: tests/check-extensions.py firefox/firefox
-      # O Firefox oficial tem o atualizador da Mozilla (aus5), que o CleanFox compilado
+      # O Firefox oficial tem o atualizador da Mozilla (aus5), que o ColdFox compilado
       # não tem; só aqui ele é aceito.
       - name: Só conexões permitidas (tests/allowed-hosts.txt)
         run: tests/check-network.py firefox/firefox 120 --also-allow aus5.mozilla.org
@@ -47,7 +47,7 @@ jobs:
       matrix:
         target: [linux, android]
     env:
-      CLEANFOX_TARGET: ${{ matrix.target }}
+      COLDFOX_TARGET: ${{ matrix.target }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make fetch prepare

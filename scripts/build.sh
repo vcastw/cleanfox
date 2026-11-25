@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# Compila o CleanFox para $CLEANFOX_TARGET. Desktop: ~40 GB de disco, 16 GB de RAM
-# (8 GB com CLEANFOX_FAST_BUILD=1) e de 1 a várias horas. Compile cada plataforma
+# Compila o ColdFox para $COLDFOX_TARGET. Desktop: ~40 GB de disco, 16 GB de RAM
+# (8 GB com COLDFOX_FAST_BUILD=1) e de 1 a várias horas. Compile cada plataforma
 # desktop no próprio sistema; Android compila em Linux ou macOS.
 # shellcheck source=scripts/common.sh
 source "$(dirname "$0")/common.sh"
 
-[ -f "$SRC_DIR/.cleanfox-prepared" ] || die "fonte não preparada (rode scripts/fetch.sh e scripts/prepare.sh)"
+[ -f "$SRC_DIR/.coldfox-prepared" ] || die "fonte não preparada (rode scripts/fetch.sh e scripts/prepare.sh)"
 cd "$SRC_DIR" || exit 1
 export MOZCONFIG="$SRC_DIR/mozconfig"
 export MOZBUILD_STATE_PATH="${MOZBUILD_STATE_PATH:-$BUILD_DIR/mozbuild}"
 
-if [ -z "${CLEANFOX_SKIP_BOOTSTRAP:-}" ]; then
+if [ -z "${COLDFOX_SKIP_BOOTSTRAP:-}" ]; then
   log "Instalando toolchain (mach bootstrap)"
   if [ "$TARGET" = android ]; then
     ./mach --no-interactive bootstrap --application-choice mobile_android

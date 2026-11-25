@@ -1,4 +1,4 @@
-// CleanFox — prefs padrão. Arquivo de prefs comum do Firefox (sem AutoConfig).
+// ColdFox — prefs padrão. Arquivo de prefs comum do Firefox (sem AutoConfig).
 //
 // pref("nome", valor, locked); -> valor fixo, o usuário NÃO pode mudar
 //                                 (usado só para telemetria/coleta de dados)

@@ -6,13 +6,13 @@ cd "$(dirname "$0")/.."
 echo "== policies.json é JSON válido"
 jq -e '.policies | type == "object"' settings/policies.json >/dev/null
 
-echo "== cleanfox.js: formato das prefs e duplicadas"
+echo "== coldfox.js: formato das prefs e duplicadas"
 # Só comentários //, linhas vazias e pref("nome", literal[, locked]); — é o que o
 # pré-processador de prefs do Firefox aceita sem surpresas.
-bad="$(grep -vE '^(//.*)?$' settings/cleanfox.js \
+bad="$(grep -vE '^(//.*)?$' settings/coldfox.js \
   | grep -vE "^pref\\(\"[A-Za-z0-9_.-]+\", (\"[^\"]*\"|'[^']*'|true|false|-?[0-9]+)(, locked)?\\);\$" || true)"
 [ -z "$bad" ] || { echo "linhas fora do formato:"; echo "$bad"; exit 1; }
-dups="$(grep -oE '^pref\("[^"]+"' settings/cleanfox.js | cut -d'"' -f2 | sort | uniq -d)"
+dups="$(grep -oE '^pref\("[^"]+"' settings/coldfox.js | cut -d'"' -f2 | sort | uniq -d)"
 [ -z "$dups" ] || { echo "prefs duplicadas:"; echo "$dups"; exit 1; }
 
 echo "== patches: cabeçalhos de diff presentes"
@@ -48,10 +48,10 @@ python3 -m py_compile tests/*.py tools/*.py
 echo "== Release: só artefatos finais"
 # O APK antes da assinatura tem os mesmos nomes de arquivo do assinado; não pode casar com
 # o padrão que o job de release baixa.
-grep -q 'pattern: cleanfox-\*' .github/workflows/build.yml \
-  || { echo "ERRO: o job de release precisa baixar só pattern: cleanfox-*"; exit 1; }
-if grep -nE 'name: cleanfox-.*unsigned' .github/workflows/build.yml; then
-  echo "ERRO: artefato não assinado com nome que casa com cleanfox-*"; exit 1
+grep -q 'pattern: coldfox-\*' .github/workflows/build.yml \
+  || { echo "ERRO: o job de release precisa baixar só pattern: coldfox-*"; exit 1; }
+if grep -nE 'name: coldfox-.*unsigned' .github/workflows/build.yml; then
+  echo "ERRO: artefato não assinado com nome que casa com coldfox-*"; exit 1
 fi
 
 # Entradas do disparo manual só por variável de ambiente, nunca dentro de um `run:`

@@ -1,6 +1,6 @@
-<p align="center"><img src="branding/logo.svg" width="128" alt="Logo do CleanFox"></p>
+<p align="center"><img src="branding/logo.svg" width="128" alt="Logo do ColdFox"></p>
 
-# CleanFox
+# ColdFox
 
 Fork do Firefox focado em **leveza, desempenho e minimalismo, com segurança em primeiro lugar** —
 sem telemetria e sem serviços de big techs ligados por padrão.
@@ -17,34 +17,34 @@ sem telemetria e sem serviços de big techs ligados por padrão.
 | macOS (Apple Silicon) | Firefox ESR | `.dmg` | **Compilado e testado no CI** (prefs, políticas, extensões e rede no binário final) |
 | Android (arm64) | Firefox estável (não existe ESR para Android) | `.apk` | **Compilado no CI**; sem teste em aparelho |
 
-Em **qualquer desktop** dá para usar hoje a configuração do CleanFox sobre um Firefox já
+Em **qualquer desktop** dá para usar hoje a configuração do ColdFox sobre um Firefox já
 instalado — veja [Usar só a configuração](#usar-só-a-configuração-num-firefox-já-instalado).
 
 ## Baixar e usar
 
-Os binários ficam na página de [Releases](https://github.com/vcastw/cleanfox/releases).
+Os binários ficam na página de [Releases](https://github.com/vcastw/coldfox/releases).
 As versões `v0.x` são pré-lançamentos: aparecem marcadas como *Pre-release*.
 
 | Sistema | Arquivo | Como instalar |
 |---|---|---|
-| Windows 10/11 (64 bits) | `cleanfox-<versão>-windows-x86_64-setup.exe` | Execute. No aviso do SmartScreen, clique em **Mais informações → Executar assim mesmo** (o instalador não é assinado). Sem instalar: baixe o `.zip`, extraia e abra `cleanfox.exe`. |
-| macOS (Apple Silicon) | `cleanfox-<versão>-macos-arm64.dmg` | Abra o `.dmg` e arraste o CleanFox para Aplicativos. Antes da primeira abertura, no Terminal: `xattr -dr com.apple.quarantine /Applications/CleanFox.app` (o app não é notarizado pela Apple). |
-| Linux (x86_64) | `cleanfox-<versão>-linux-x86_64.tar.xz` | `tar -xf cleanfox-*.tar.xz` e depois `./cleanfox/cleanfox`. Pode ficar em qualquer pasta (ex.: `~/.local/opt`). |
-| Android (arm64) | `cleanfox-<versão>-android-fenix-arm64-v8a.apk` | Abra o `.apk` no aparelho e permita a instalação de fonte desconhecida. Os outros `.apk` são para aparelhos antigos de 32 bits (`armeabi-v7a`) e emuladores (`x86_64`). |
+| Windows 10/11 (64 bits) | `coldfox-<versão>-windows-x86_64-setup.exe` | Execute. No aviso do SmartScreen, clique em **Mais informações → Executar assim mesmo** (o instalador não é assinado). Sem instalar: baixe o `.zip`, extraia e abra `coldfox.exe`. |
+| macOS (Apple Silicon) | `coldfox-<versão>-macos-arm64.dmg` | Abra o `.dmg` e arraste o ColdFox para Aplicativos. Antes da primeira abertura, no Terminal: `xattr -dr com.apple.quarantine /Applications/ColdFox.app` (o app não é notarizado pela Apple). |
+| Linux (x86_64) | `coldfox-<versão>-linux-x86_64.tar.xz` | `tar -xf coldfox-*.tar.xz` e depois `./coldfox/coldfox`. Pode ficar em qualquer pasta (ex.: `~/.local/opt`). |
+| Android (arm64) | `coldfox-<versão>-android-fenix-arm64-v8a.apk` | Abra o `.apk` no aparelho e permita a instalação de fonte desconhecida. Os outros `.apk` são para aparelhos antigos de 32 bits (`armeabi-v7a`) e emuladores (`x86_64`). |
 
 **Conferir o download** (recomendado): cada arquivo tem um `.sha256` ao lado e um atestado
 de que foi compilado pelo workflow deste repositório.
 
 ```bash
-sha256sum -c cleanfox-*.sha256
+sha256sum -c coldfox-*.sha256
 ```
 
 ```bash
-gh attestation verify cleanfox-<arquivo> -R vcastw/cleanfox
+gh attestation verify coldfox-<arquivo> -R vcastw/coldfox
 ```
 
 **No primeiro uso**
-- O CleanFox usa um perfil próprio: não mexe no Firefox instalado nem importa nada sozinho.
+- O ColdFox usa um perfil próprio: não mexe no Firefox instalado nem importa nada sozinho.
   Para trazer favoritos e senhas: menu → Favoritos → Gerenciar favoritos → Importar e backup.
 - uBlock Origin, Privacy Badger e Decentraleyes são baixados da loja da Mozilla nos primeiros
   segundos com internet. Dá para remover qualquer um em Extensões.
@@ -58,14 +58,14 @@ correções de segurança do Firefox.
 
 ## Como funciona
 
-O CleanFox não copia o código do Firefox para este repositório. Como LibreWolf e Mullvad Browser,
+O ColdFox não copia o código do Firefox para este repositório. Como LibreWolf e Mullvad Browser,
 ele é um conjunto pequeno e auditável de arquivos aplicado sobre o código-fonte oficial:
 
 | Caminho | O que é |
 |---|---|
 | `version`, `version-android` | Versão base do Firefox (`esr-latest` / `release-latest`, ou uma versão fixa) |
 | `mozconfig` | Opções de compilação de todas as plataformas |
-| `settings/cleanfox.js` | Prefs padrão/travadas, cada uma com o motivo |
+| `settings/coldfox.js` | Prefs padrão/travadas, cada uma com o motivo |
 | `settings/policies.json` | Políticas do desktop (buscador, extensões de fábrica, IA, mensagens) |
 | `branding/` | Nome e logo (`logo.svg`); ícones e wordmarks são gerados dele por `tools/gen-branding.py` |
 | `patches/` | Alterações no código-fonte (último recurso) |
@@ -134,7 +134,7 @@ No Android, as mesmas três são instaladas na primeira abertura do app (veja [N
 
 ## Conexões que continuam existindo (e por quê)
 
-Transparência em vez de promessa de "zero conexões". Medido abrindo o CleanFox com um perfil
+Transparência em vez de promessa de "zero conexões". Medido abrindo o ColdFox com um perfil
 novo e deixando-o parado por 2 minutos (`tests/check-network.py`, que roda no CI; a lista
 completa e o motivo de cada host estão em `tests/allowed-hosts.txt`):
 
@@ -155,7 +155,7 @@ localização, estudos (Normandy), contas, push e detecção de portal cativo.
   phishing/malware. As listas do uBlock Origin cobrem parte disso, não tudo. Para religar:
   ative "Bloquear conteúdo perigoso e enganoso" e restaure as prefs `browser.safebrowsing.provider.google*`.
 - **Sem atualizador automático.** O atualizador da Mozilla é removido; você precisa instalar
-  cada novo release do CleanFox. Navegador desatualizado é o maior risco de segurança que existe —
+  cada novo release do ColdFox. Navegador desatualizado é o maior risco de segurança que existe —
   enquanto o projeto não publicar releases a cada ESR, prefira usar só a configuração (abaixo).
 - **DRM desligado.** Netflix, Spotify etc. não tocam até reativar o DRM nas Configurações.
 - **Sem push em segundo plano.** Notificações de sites só chegam com a aba aberta
@@ -168,7 +168,7 @@ localização, estudos (Normandy), contas, push e detecção de portal cativo.
 
 ## Usar só a configuração, num Firefox já instalado
 
-Forma mais rápida (e hoje a recomendada) de ter o comportamento do CleanFox no desktop,
+Forma mais rápida (e hoje a recomendada) de ter o comportamento do ColdFox no desktop,
 mantendo as atualizações de segurança oficiais da Mozilla:
 
 ```bash
@@ -177,7 +177,7 @@ scripts/apply-config.sh /Applications/Firefox.app             # macOS
 scripts/apply-config.sh "/c/Program Files/Mozilla Firefox"    # Windows (Git Bash, como administrador)
 ```
 
-Isso copia dois arquivos para a instalação: `browser/defaults/preferences/cleanfox.js` e
+Isso copia dois arquivos para a instalação: `browser/defaults/preferences/coldfox.js` e
 `distribution/policies.json`. Para desfazer, apague-os. Atualizações do Firefox podem removê-los.
 
 ## Compilar
@@ -195,8 +195,8 @@ make package    # recolhe os pacotes em dist/ com SHA-256
 
 Para Android, acrescente `TARGET=android` a cada comando (`make TARGET=android fetch` ...).
 
-Variáveis: `CLEANFOX_FAST_BUILD=1` (sem LTO, menos RAM), `CLEANFOX_PGO=1` (PGO),
-`CLEANFOX_SKIP_BOOTSTRAP=1` (toolchain já instalada), `CLEANFOX_ANDROID_ABI=aarch64|armv7|x86_64`.
+Variáveis: `COLDFOX_FAST_BUILD=1` (sem LTO, menos RAM), `COLDFOX_PGO=1` (PGO),
+`COLDFOX_SKIP_BOOTSTRAP=1` (toolchain já instalada), `COLDFOX_ANDROID_ABI=aarch64|armv7|x86_64`.
 
 O workflow **Build** do GitHub Actions compila as quatro plataformas. Para publicar um
 release: crie uma tag `vX.Y` ou dispare o workflow com o campo `release_tag` preenchido.
@@ -207,7 +207,7 @@ release: crie uma tag `vX.Y` ou dispare o workflow com o campo `release_tag` pre
 Assinatura de código exige um certificado pago.
 
 **macOS** — o app não é assinado nem notarizado pela Apple (exige conta de desenvolvedor paga).
-Na primeira execução: `xattr -dr com.apple.quarantine /Applications/CleanFox.app`.
+Na primeira execução: `xattr -dr com.apple.quarantine /Applications/ColdFox.app`.
 
 **Android** — é outro aplicativo (Fenix). Os ajustes ficam em `scripts/prepare-android.sh`
 e cada um falha a compilação se o código da Mozilla mudar, em vez de passar pela metade:
@@ -218,8 +218,8 @@ e cada um falha a compilação se o código da Mozilla mudar, em vez de passar p
 - DuckDuckGo como buscador padrão, Safe Browsing do Google desligado, proteção contra
   rastreamento rigorosa, HTTPS em todas as abas e GPC; sem atalhos patrocinados, Pocket,
   Firefox Suggest e sugestões de busca; sem apresentação inicial nem Termos de Uso da Mozilla.
-- As prefs de `settings/cleanfox.js` entram no GeckoView; `policies.json` não existe no Android.
-- Nome, ID (`io.github.cleanfox`), ícone e wordmarks são do CleanFox. Ainda restam textos
+- As prefs de `settings/coldfox.js` entram no GeckoView; `policies.json` não existe no Android.
+- Nome, ID (`io.github.coldfox`), ícone e wordmarks são do ColdFox. Ainda restam textos
   "Firefox" em telas secundárias (sincronização, traduções) e nos ícones alternativos.
 - Para que atualizações instalem por cima, o APK precisa ser sempre assinado com a mesma
   chave. Crie um keystore e cadastre os secrets `ANDROID_KEYSTORE_B64`,
@@ -230,12 +230,12 @@ e cada um falha a compilação se o código da Mozilla mudar, em vez de passar p
 
 ```bash
 tests/lint.sh                                    # formato das prefs, JSON, actions fixadas, chave da Mozilla, shellcheck
-tests/check-runtime.py /caminho/do/cleanfox      # sobe o navegador headless e confere cada pref e política
-tests/check-extensions.py /caminho/do/cleanfox   # extensões de fábrica instaladas, ativas e assinadas
-tests/check-network.py /caminho/do/cleanfox      # toda conexão em 2 min parado está em tests/allowed-hosts.txt
+tests/check-runtime.py /caminho/do/coldfox      # sobe o navegador headless e confere cada pref e política
+tests/check-extensions.py /caminho/do/coldfox   # extensões de fábrica instaladas, ativas e assinadas
+tests/check-network.py /caminho/do/coldfox      # toda conexão em 2 min parado está em tests/allowed-hosts.txt
 ```
 
-O CI roda todos a cada push (sobre o Firefox ESR oficial com a configuração do CleanFox) e,
+O CI roda todos a cada push (sobre o Firefox ESR oficial com a configuração do ColdFox) e,
 toda semana, baixa o código-fonte mais recente (desktop e Android) para conferir que patches
 e ajustes ainda se aplicam. Controles de segurança e lacunas conhecidas: [SECURITY.md](SECURITY.md).
 
@@ -267,5 +267,5 @@ Pendente:
 
 ## Licença e marcas
 
-Código sob a [Mozilla Public License 2.0](LICENSE). CleanFox é um projeto independente, **não
+Código sob a [Mozilla Public License 2.0](LICENSE). ColdFox é um projeto independente, **não
 afiliado nem endossado pela Mozilla**. "Firefox" e "Mozilla" são marcas da Mozilla Foundation.

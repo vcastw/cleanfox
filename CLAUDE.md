@@ -1,4 +1,4 @@
-# CleanFox — instruções para agentes
+# ColdFox — instruções para agentes
 
 Fork do Firefox (ESR no desktop, estável no Android) focado em leveza, minimalismo e
 segurança em primeiro lugar, sem telemetria nem serviços de big techs ligados por padrão.
@@ -7,7 +7,7 @@ patches, scripts) aplicada sobre o código-fonte oficial. Visão geral no `READM
 Português do Brasil em código, comentários, documentação e commits.
 
 ## Onde mexer (do mais barato ao mais caro)
-1. `settings/cleanfox.js` — prefs; cada uma com o motivo no comentário. `locked` só para coleta de dados.
+1. `settings/coldfox.js` — prefs; cada uma com o motivo no comentário. `locked` só para coleta de dados.
 2. `settings/policies.json` — políticas do desktop (buscador, extensões de fábrica, IA).
 3. `mozconfig` — opções de compilação.
 4. `patches/` — último recurso; precisa ser conferido a cada versão do Firefox.

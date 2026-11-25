@@ -1,4 +1,4 @@
-# Hosts que o CleanFox (perfil novo, parado) pode contatar sozinho, cada um com o motivo.
+# Hosts que o ColdFox (perfil novo, parado) pode contatar sozinho, cada um com o motivo.
 # Usado por tests/check-network.py. Host novo aqui exige motivo e revisão no PR.
 
 # --- Navegador ---

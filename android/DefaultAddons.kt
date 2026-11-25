@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.fenix.cleanfox
+package org.mozilla.fenix.coldfox
 
 import android.content.Context
 import mozilla.components.concept.engine.webextension.InstallationMethod
@@ -14,7 +14,7 @@ import mozilla.components.support.webextensions.WebExtensionSupport
 import java.util.Collections
 
 /**
- * CleanFox: instala as extensões de fábrica (as mesmas do desktop, em settings/policies.json)
+ * ColdFox: instala as extensões de fábrica (as mesmas do desktop, em settings/policies.json)
  * da loja da Mozilla. Cada uma é instalada uma única vez: se o usuário removê-la, não volta.
  * Sem rede na primeira abertura, tenta de novo nas próximas.
  *
@@ -30,8 +30,8 @@ object DefaultAddons {
         "jid1-BoFifL9Vbdl2zQ@jetpack" to
             "https://addons.mozilla.org/firefox/downloads/latest/decentraleyes/latest.xpi",
     )
-    private const val PREFS = "cleanfox_default_addons"
-    private val logger = Logger("CleanFoxDefaultAddons")
+    private const val PREFS = "coldfox_default_addons"
+    private val logger = Logger("ColdFoxDefaultAddons")
     private val pending: MutableSet<String> = Collections.synchronizedSet(mutableSetOf())
 
     fun installIfNeeded(context: Context, addonManager: AddonManager, installed: List<WebExtension>) {
