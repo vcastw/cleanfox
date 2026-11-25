@@ -100,7 +100,7 @@ ele é um conjunto pequeno e auditável de arquivos aplicado sobre o código-fon
 | `mozconfig` | Opções de compilação de todas as plataformas |
 | `settings/coldfox.js` | Prefs padrão/travadas, cada uma com o motivo |
 | `settings/policies.json` | Políticas do desktop (buscador, extensões de fábrica, IA, mensagens) |
-| `branding/` | Nome e logo (`logo.svg`); ícones e wordmarks são gerados dele por `tools/gen-branding.py` |
+| `branding/` | Nome e logo (`logo.svg`); ícones, wordmarks, janela "Sobre" e imagens do instalador são gerados dele por `tools/gen-branding.py` |
 | `patches/` | Alterações no código-fonte (último recurso) |
 | `scripts/` | Baixar fonte, preparar, compilar, empacotar |
 | `tests/` | Lint estático e teste de runtime num navegador real |
@@ -316,7 +316,7 @@ Feito e verificado:
 Pendente:
 - [ ] Android: debranding dos textos restantes (sincronização, traduções) e ícones alternativos;
   teste em aparelho real
-- [ ] Ícones secundários do Windows/macOS (documento, navegação privativa, instalador) ainda são os genéricos "unofficial"
+- [ ] macOS: fundo da imagem de disco (`.dmg`) e ícone do volume ainda são os genéricos "unofficial"
 - [ ] Patch para remover Normandy e Health Report da compilação (hoje desligados por pref travada)
 - [ ] Assinatura de código no Windows e no macOS (dependem de certificado; veja [Assinatura](#assinatura))
 - [x] Conferência diária de versão nova do Firefox (issue de aviso ou release automático)

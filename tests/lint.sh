@@ -36,6 +36,19 @@ echo "== allowed-hosts.txt: todo host tem motivo"
 bad="$(grep -vE '^(#.*)?$' tests/allowed-hosts.txt | grep -vE '^[a-z0-9.-]+  [^ ].+$' || true)"
 [ -z "$bad" ] || { echo "linhas sem motivo:"; echo "$bad"; exit 1; }
 
+echo "== branding: telas secundárias com a marca do ColdFox"
+# O branding "unofficial" do Firefox, usado de base, mostra "Nightly" e um globo na janela
+# "Sobre", na nova aba, no instalador e nos ícones de documento e de navegação privativa.
+for f in content/about-logo.png content/about-logo@2x.png content/about-logo.svg \
+         content/about-logo-private.png content/about-logo-private@2x.png content/about.png \
+         content/about-wordmark.svg content/firefox-wordmark.svg content/aboutDialog.css \
+         VisualElements_70.png VisualElements_150.png PrivateBrowsing_70.png PrivateBrowsing_150.png \
+         pbmode.ico document.ico document.icns wizHeader.bmp wizHeaderRTL.bmp wizWatermark.bmp; do
+  [ -f "branding/$f" ] || { echo "falta branding/$f (rode tools/gen-branding.py)"; exit 1; }
+done
+grep -q '<title>ColdFox</title>' branding/content/about-wordmark.svg branding/content/firefox-wordmark.svg \
+  || { echo "wordmarks sem o texto ColdFox"; exit 1; }
+
 echo "== mozconfig: sintaxe shell"
 bash -n mozconfig
 

@@ -15,7 +15,8 @@ ROOT = Path(__file__).resolve().parent.parent
 LOGO = ROOT / "branding/logo.svg"
 INK = (11, 20, 38, 255)  # fundo escuro dos ícones do Android: o logo tem partes brancas
 INK_HEX = "#0B1426"
-BLUE = (20, 140, 255, 255)  # texto dos wordmarks: legível em tema claro e escuro
+BLUE = (20, 140, 255, 255)
+VIOLET = (128, 0, 215, 255)  # cor da navegação privativa do Firefox  # texto dos wordmarks: legível em tema claro e escuro
 FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 SS = 4  # supersampling das formas de fundo
 
@@ -112,6 +113,85 @@ def vector_foreground():
     )
 
 
+def wordmark_svg(fallback):
+    """"ColdFox" em curvas (sem depender de fonte instalada), na cor do contexto do Firefox."""
+    import cairocffi as cairo
+
+    ctx = cairo.Context(cairo.RecordingSurface(cairo.CONTENT_ALPHA, None))
+    ctx.select_font_face("DejaVu Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+    ctx.set_font_size(100)
+    xb, yb, w, h, _, _ = ctx.text_extents("ColdFox")
+    ctx.move_to(-xb, -yb)
+    ctx.text_path("ColdFox")
+    f = lambda *v: " ".join(f"{x:.2f}".rstrip("0").rstrip(".") for x in v)
+    cmds = {cairo.PATH_MOVE_TO: "M", cairo.PATH_LINE_TO: "L", cairo.PATH_CURVE_TO: "C", cairo.PATH_CLOSE_PATH: "Z"}
+    d = "".join(cmds[k] + f(*pts) for k, pts in ctx.copy_path())
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w:g} {h:g}" fill="context-fill {fallback}">'
+        f'<title>ColdFox</title><path d="{d}"/></svg>\n'
+    )
+
+
+def private_badge(size):
+    """Selo da navegação privativa: máscara branca num círculo violeta."""
+    big = size * SS
+    im = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.ellipse([0, 0, big - 1, big - 1], fill=VIOLET)
+    cx, cy = big / 2, big * 0.5
+    mw, mh = big * 0.62, big * 0.32
+    d.rounded_rectangle([cx - mw / 2, cy - mh / 2, cx + mw / 2, cy + mh / 2], radius=mh * 0.45, fill=(255, 255, 255, 255))
+    for side in (-1, 1):  # olhos
+        ex = cx + side * mw * 0.24
+        d.ellipse([ex - mw * 0.14, cy - mh * 0.2, ex + mw * 0.14, cy + mh * 0.16], fill=VIOLET)
+    return im.resize((size, size), Image.LANCZOS)
+
+
+def private_icon(size):
+    """Selo grande com o logo no canto inferior direito (como o ícone do Firefox)."""
+    im = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    b = round(size * 0.86)
+    im.alpha_composite(private_badge(b), (0, 0))
+    lg = round(size * 0.5)
+    im.alpha_composite(render(lg), (size - lg, size - lg))
+    return im
+
+
+def centered(size, inner, bg=(0, 0, 0, 0), image=None):
+    im = Image.new("RGBA", size, bg)
+    image = image or render(inner)
+    im.alpha_composite(image, ((size[0] - image.width) // 2, (size[1] - image.height) // 2))
+    return im
+
+
+def banner(size, logo_size, text_size, bg=INK, fg=(255, 255, 255, 255), logo_y=None):
+    """Fundo escuro, logo centralizado e "ColdFox" embaixo."""
+    w, h = size
+    im = Image.new("RGBA", size, bg)
+    font = ImageFont.truetype(FONT, text_size)
+    d = ImageDraw.Draw(im)
+    left, top, right, bottom = d.textbbox((0, 0), "ColdFox", font=font)
+    gap = text_size // 2
+    y = logo_y if logo_y is not None else (h - logo_size - gap - (bottom - top)) // 2
+    im.alpha_composite(render(logo_size), ((w - logo_size) // 2, y))
+    d.text(((w - (right - left)) // 2 - left, y + logo_size + gap - top), "ColdFox", font=font, fill=fg)
+    return im
+
+
+def document_icon(size):
+    """Página com a ponta dobrada e o logo dentro (arquivos .html associados ao ColdFox)."""
+    big = size * SS
+    im = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    x0, x1, y0, y1, fold = big * 0.14, big * 0.86, big * 0.04, big * 0.96, big * 0.2
+    d.polygon([(x0, y0), (x1 - fold, y0), (x1, y0 + fold), (x1, y1), (x0, y1)], fill=(245, 248, 252, 255), outline=(150, 160, 175, 255), width=max(SS, big // 128))
+    d.polygon([(x1 - fold, y0), (x1 - fold, y0 + fold), (x1, y0 + fold)], fill=(200, 208, 220, 255))
+    im = im.resize((size, size), Image.LANCZOS)
+    lg = round(size * 0.56)
+    im.alpha_composite(render(lg), ((size - lg) // 2, round(size * 0.3)))
+    return im
+
+
 def save(im, path):
     path.parent.mkdir(parents=True, exist_ok=True)
     im.save(path, lossless=True) if path.suffix == ".webp" else im.save(path)
@@ -129,6 +209,34 @@ def main():
     icns = Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))
     icns.alpha_composite(render(824), (100, 100))
     icns.save(ROOT / "branding/firefox.icns")
+
+    # Telas secundárias do desktop (no branding "unofficial" mostravam "Nightly" e um globo).
+    br = ROOT / "branding"
+    content = br / "content"
+    for name, size in (("about-logo.png", 192), ("about-logo@2x.png", 384)):
+        save(render(size), content / name)
+    for name, size in (("about-logo-private.png", 192), ("about-logo-private@2x.png", 384)):
+        save(private_icon(size), content / name)
+    (content / "about-logo.svg").write_text(LOGO.read_text())
+    (content / "about-wordmark.svg").write_text(wordmark_svg("#fff"))  # janela "Sobre"
+    (content / "firefox-wordmark.svg").write_text(wordmark_svg(INK_HEX))  # nova aba
+    save(banner((300, 236), 128, 30).convert("RGB"), content / "about.png")
+    # Windows: bloco do menu Iniciar, navegação privativa, documentos e instalador.
+    for name, size in (("VisualElements_70.png", 142), ("VisualElements_150.png", 300)):
+        save(centered((size, size), round(size * 0.62)), br / name)
+    for name, size in (("PrivateBrowsing_70.png", 142), ("PrivateBrowsing_150.png", 300)):
+        save(centered((size, size), 0, image=private_icon(round(size * 0.62))), br / name)
+    private_icon(256).save(br / "pbmode.ico", sizes=[(n, n) for n in (16, 32, 48, 256)])
+    document_icon(256).save(br / "document.ico", sizes=[(n, n) for n in (16, 32, 48, 256)])
+    save(banner((164, 314), 120, 22, logo_y=70).convert("RGB"), br / "wizWatermark.bmp")
+    header = centered((57, 57), 48, bg=(255, 255, 255, 255))
+    for name, x in (("wizHeader.bmp", 150 - 57), ("wizHeaderRTL.bmp", 0)):
+        im = Image.new("RGBA", (150, 57), (255, 255, 255, 255))
+        im.alpha_composite(header, (x, 0))
+        save(im.convert("RGB"), br / name)
+    doc = Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))
+    doc.alpha_composite(document_icon(824), (100, 100))
+    doc.save(br / "document.icns")
 
     # Android: mesmos nomes e dimensões dos recursos de marca do Fenix (variante release).
     res = ROOT / "branding/android/res"
