@@ -67,7 +67,8 @@ if ruim:
     sys.exit("ERRO: expressão controlável por quem dispara dentro de run: (use env:)\n" + "\n".join(ruim))
 PY
 
-echo "== Empacotamento (pacotes falsos)"
+echo "== Empacotamento, release e instalador (pacotes falsos)"
 tests/test-package.sh
+tests/test-release.sh
 
 echo "OK"

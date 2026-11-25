@@ -5,38 +5,70 @@
 Fork do Firefox focado em **leveza, desempenho e minimalismo, com segurança em primeiro lugar** —
 sem telemetria e sem serviços de big techs ligados por padrão.
 
-> **Estado do projeto:** inicial. Não há binários publicados ainda. As quatro plataformas
-> compilam no CI; Linux e macOS também são testados no binário final — veja [Plataformas](#plataformas).
+## Baixar
+
+| Sistema | Download direto (sempre a versão mais recente) |
+|---|---|
+| **Windows** 10/11, 64 bits | [**Instalador (.exe)**](https://github.com/vcastw/coldfox/releases/latest/download/coldfox-windows-x86_64-setup.exe) · [portátil (.zip)](https://github.com/vcastw/coldfox/releases/latest/download/coldfox-windows-x86_64.zip) |
+| **macOS**, Apple Silicon | [**Imagem de disco (.dmg)**](https://github.com/vcastw/coldfox/releases/latest/download/coldfox-macos-arm64.dmg) |
+| **Linux**, x86_64 | [**Pacote (.tar.xz)**](https://github.com/vcastw/coldfox/releases/latest/download/coldfox-linux-x86_64.tar.xz) ou o [instalador de um comando](#linux) |
+| **Android**, arm64 | [**APK**](https://github.com/vcastw/coldfox/releases/latest/download/coldfox-android-arm64-v8a.apk) |
+
+Como instalar em cada sistema: [Instalar](#instalar). Todas as versões e os arquivos de
+conferência: [Releases](https://github.com/vcastw/coldfox/releases).
+
+> **Estado do projeto:** inicial. As quatro plataformas compilam no CI; em Linux, macOS e
+> Windows o binário final é testado antes de ser publicado — veja [Plataformas](#plataformas).
 
 ## Plataformas
 
 | Plataforma | Base | Pacote gerado | Estado |
 |---|---|---|---|
 | Linux x86_64 | Firefox ESR | `.tar.xz` | **Compilado e testado no CI** (prefs, políticas, extensões e rede no binário final) |
-| Windows x86_64 | Firefox ESR | `.zip` + instalador `.exe` | **Compilado no CI**; binário ainda sem teste automático |
+| Windows x86_64 | Firefox ESR | `.zip` + instalador `.exe` | **Compilado e testado no CI** (prefs, políticas, extensões e rede no binário final) |
 | macOS (Apple Silicon) | Firefox ESR | `.dmg` | **Compilado e testado no CI** (prefs, políticas, extensões e rede no binário final) |
 | Android (arm64) | Firefox estável (não existe ESR para Android) | `.apk` | **Compilado no CI**; sem teste em aparelho |
 
 Em **qualquer desktop** dá para usar hoje a configuração do ColdFox sobre um Firefox já
 instalado — veja [Usar só a configuração](#usar-só-a-configuração-num-firefox-já-instalado).
 
-## Baixar e usar
+## Instalar
 
-Os binários ficam na página de [Releases](https://github.com/vcastw/coldfox/releases).
-As versões `v0.x` são pré-lançamentos: aparecem marcadas como *Pre-release*.
+**Windows** — execute o instalador. No aviso do SmartScreen, clique em **Mais informações →
+Executar assim mesmo** (o instalador não é assinado). Sem instalar: extraia o `.zip` e abra
+`coldfox.exe`.
 
-| Sistema | Arquivo | Como instalar |
-|---|---|---|
-| Windows 10/11 (64 bits) | `coldfox-<versão>-windows-x86_64-setup.exe` | Execute. No aviso do SmartScreen, clique em **Mais informações → Executar assim mesmo** (o instalador não é assinado). Sem instalar: baixe o `.zip`, extraia e abra `coldfox.exe`. |
-| macOS (Apple Silicon) | `coldfox-<versão>-macos-arm64.dmg` | Abra o `.dmg` e arraste o ColdFox para Aplicativos. Antes da primeira abertura, no Terminal: `xattr -dr com.apple.quarantine /Applications/ColdFox.app` (o app não é notarizado pela Apple). |
-| Linux (x86_64) | `coldfox-<versão>-linux-x86_64.tar.xz` | `tar -xf coldfox-*.tar.xz` e depois `./coldfox/coldfox`. Pode ficar em qualquer pasta (ex.: `~/.local/opt`). |
-| Android (arm64) | `coldfox-<versão>-android-fenix-arm64-v8a.apk` | Abra o `.apk` no aparelho e permita a instalação de fonte desconhecida. Os outros `.apk` são para aparelhos antigos de 32 bits (`armeabi-v7a`) e emuladores (`x86_64`). |
-
-**Conferir o download** (recomendado): cada arquivo tem um `.sha256` ao lado e um atestado
-de que foi compilado pelo workflow deste repositório.
+**macOS** — abra o `.dmg` e arraste o ColdFox para Aplicativos. Antes da primeira abertura,
+no Terminal (o app não é notarizado pela Apple):
 
 ```bash
-sha256sum -c coldfox-*.sha256
+xattr -dr com.apple.quarantine /Applications/ColdFox.app
+```
+
+<a id="linux"></a>**Linux** — o instalador baixa a versão mais recente, confere o SHA-256,
+instala em `~/.local/opt/coldfox` (sem root) e cria o atalho no menu e o comando `coldfox`.
+Rodar de novo atualiza. Baixe, leia se quiser, e execute:
+
+```bash
+curl -fLO https://raw.githubusercontent.com/vcastw/coldfox/main/scripts/install-linux.sh
+```
+
+```bash
+bash install-linux.sh
+```
+
+Manual: `tar -xf coldfox-linux-x86_64.tar.xz` e depois `./coldfox/coldfox`, em qualquer pasta.
+
+**Android** — abra o `.apk` no aparelho e permita a instalação de fonte desconhecida. Os
+outros `.apk` do release são para aparelhos antigos de 32 bits (`armeabi-v7a`) e emuladores
+(`x86_64`). Enquanto o projeto não tiver uma chave de assinatura fixa (veja
+[Notas por plataforma](#notas-por-plataforma)), cada versão nova exige desinstalar a anterior.
+
+**Conferir o download** (recomendado): o release traz um `SHA256SUMS` e cada arquivo tem um
+atestado de que foi compilado pelo workflow deste repositório.
+
+```bash
+sha256sum -c --ignore-missing SHA256SUMS
 ```
 
 ```bash
@@ -200,6 +232,8 @@ Variáveis: `COLDFOX_FAST_BUILD=1` (sem LTO, menos RAM), `COLDFOX_PGO=1` (PGO),
 
 O workflow **Build** do GitHub Actions compila as quatro plataformas. Para publicar um
 release: crie uma tag `vX.Y` ou dispare o workflow com o campo `release_tag` preenchido.
+Os arquivos saem sem a versão no nome (`scripts/release-assets.sh`), para os links de
+[Baixar](#baixar) valerem em todo release; a versão do Firefox de cada um fica nas notas.
 
 ### Notas por plataforma
 
@@ -229,7 +263,7 @@ e cada um falha a compilação se o código da Mozilla mudar, em vez de passar p
 ## Testes
 
 ```bash
-tests/lint.sh                                    # formato das prefs, JSON, actions fixadas, chave da Mozilla, shellcheck
+tests/lint.sh                                    # formato das prefs, JSON, actions fixadas, chave da Mozilla, shellcheck, release e instalador
 tests/check-runtime.py /caminho/do/coldfox      # sobe o navegador headless e confere cada pref e política
 tests/check-extensions.py /caminho/do/coldfox   # extensões de fábrica instaladas, ativas e assinadas
 tests/check-network.py /caminho/do/coldfox      # toda conexão em 2 min parado está em tests/allowed-hosts.txt
@@ -250,11 +284,10 @@ Feito e verificado:
   políticas e extensões de fábrica conferidas e só conexões permitidas
 - [x] Download do código-fonte recusa assinatura inválida ou de outra chave (testado)
 - [x] **As quatro plataformas compilam no GitHub Actions** (Linux, macOS, Windows, Android);
-  em Linux e macOS o binário é testado (prefs, extensões, rede) antes de publicar
+  em Linux, macOS e Windows o binário é testado (prefs, extensões, rede) antes de publicar
+- [x] Releases com links de download fixos, `SHA256SUMS` e atestado de procedência
 
 Pendente:
-- [ ] Testes do binário no Windows (o CI só compila e empacota)
-- [ ] Primeiro release (`v0.1`)
 - [ ] Android: debranding dos textos restantes (sincronização, traduções) e ícones alternativos;
   teste em aparelho real
 - [ ] `application.ini` ainda diz `Vendor=Mozilla`; `pingsender` ainda é empacotado (sem uso, telemetria desligada)

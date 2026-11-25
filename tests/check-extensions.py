@@ -50,7 +50,7 @@ def main():
     settings = json.loads((ROOT / "settings/policies.json").read_text())["policies"]["ExtensionSettings"]
     ids = [i for i, s in settings.items() if s.get("installation_mode") in ("normal_installed", "force_installed")]
 
-    with tempfile.TemporaryDirectory() as profile:
+    with runtime.temp_profile() as profile:
         Path(profile, "user.js").write_text('user_pref("remote.prefs.recommended", false);\n')
         extra_ca = os.environ.get("COLDFOX_TEST_EXTRA_CA")
         if extra_ca:
@@ -61,10 +61,7 @@ def main():
             # recusa justamente uma CA de interceptação. Só neste perfil de teste: modo 1.
             with open(Path(profile, "user.js"), "a") as f:
                 f.write('user_pref("security.cert_pinning.enforcement_level", 1);\n')
-        proc = subprocess.Popen(
-            [sys.argv[1], "--headless", "--no-remote", "--marionette", "-remote-allow-system-access", "--profile", profile],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-        )
+        proc = runtime.start(sys.argv[1], profile, "--marionette", "-remote-allow-system-access")
         try:
             m = runtime.Marionette(runtime.PORT)
             m.send("WebDriver:NewSession", {})
@@ -80,11 +77,7 @@ def main():
                     break
                 time.sleep(3)
         finally:
-            proc.terminate()
-            try:
-                proc.wait(timeout=20)
-            except subprocess.TimeoutExpired:
-                proc.kill()
+            runtime.stop(proc)
 
     failures = []
     for i in ids:

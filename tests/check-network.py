@@ -11,6 +11,7 @@ Se a máquina já sai por um proxy (HTTPS_PROXY), o teste encadeia nele. Se esse
 intercepta TLS, aponte COLDFOX_TEST_EXTRA_CA para a CA dele (como em check-extensions.py).
 """
 import asyncio
+import importlib.util
 import os
 import subprocess
 import sys
@@ -21,6 +22,9 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parent.parent
+spec = importlib.util.spec_from_file_location("runtime", ROOT / "tests/check-runtime.py")
+runtime = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(runtime)
 UPSTREAM = urlsplit(os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy") or "")
 seen = {}
 
@@ -92,7 +96,7 @@ def main():
         time.sleep(0.05)
     port = ready[0]
 
-    with tempfile.TemporaryDirectory() as profile:
+    with runtime.temp_profile() as profile:
         prefs = {
             "network.proxy.type": 1, "network.proxy.http": "127.0.0.1", "network.proxy.http_port": port,
             "network.proxy.ssl": "127.0.0.1", "network.proxy.ssl_port": port,
@@ -106,14 +110,9 @@ def main():
             prefs["security.cert_pinning.enforcement_level"] = 1  # ver check-extensions.py
         js = lambda v: "true" if v is True else str(v) if isinstance(v, int) else f'"{v}"'
         Path(profile, "user.js").write_text("".join(f'user_pref("{k}", {js(v)});\n' for k, v in prefs.items()))
-        proc = subprocess.Popen([binary, "--headless", "--no-remote", "--profile", profile],
-                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        proc = runtime.start(binary, profile)
         time.sleep(seconds)
-        proc.terminate()
-        try:
-            proc.wait(timeout=20)
-        except subprocess.TimeoutExpired:
-            proc.kill()
+        runtime.stop(proc)
 
     allowed = allowed_hosts() | extra
     unknown = []

@@ -33,6 +33,31 @@ def expected_prefs():
     return prefs
 
 
+def temp_profile():
+    # No Windows o navegador pode ainda segurar arquivos do perfil por um instante.
+    return tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
+
+
+def start(binary, profile, *extra):
+    args = [binary, "--headless", "--no-remote", *extra, "--profile", profile]
+    if sys.platform == "win32":
+        # O .exe do Windows é um lançador que abre o navegador em outro processo;
+        # com isto ele fica vivo até o navegador sair e stop() alcança os dois.
+        args.insert(1, "-wait-for-browser")
+    return subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def stop(proc):
+    if sys.platform == "win32":
+        subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)], capture_output=True)
+    else:
+        proc.terminate()
+    try:
+        proc.wait(timeout=20)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+
+
 class Marionette:
     def __init__(self, port, timeout=90):
         deadline = time.time() + timeout
@@ -102,26 +127,18 @@ def main():
     prefs = expected_prefs()
     policies = json.loads((ROOT / "settings/policies.json").read_text())["policies"]
 
-    with tempfile.TemporaryDirectory() as profile:
+    with temp_profile() as profile:
         # Sem isto o Marionette aplica suas próprias prefs "recomendadas" para automação
         # (que desligam telemetria, safebrowsing etc.) e mascararia o resultado.
         Path(profile, "user.js").write_text('user_pref("remote.prefs.recommended", false);\n')
-        proc = subprocess.Popen(
-            [binary, "--headless", "--no-remote", "--marionette", "-remote-allow-system-access", "--profile", profile],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
+        proc = start(binary, profile, "--marionette", "-remote-allow-system-access")
         try:
             m = Marionette(PORT)
             m.send("WebDriver:NewSession", {})
             m.send("Marionette:SetContext", {"value": "chrome"})
             got = m.send("WebDriver:ExecuteScript", {"script": CHROME_SCRIPT, "args": [prefs]})["value"]
         finally:
-            proc.terminate()
-            try:
-                proc.wait(timeout=20)
-            except subprocess.TimeoutExpired:
-                proc.kill()
+            stop(proc)
 
     failures = []
     actual = {p["name"]: p for p in got["prefs"]}

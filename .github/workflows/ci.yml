@@ -38,6 +38,30 @@ jobs:
       - name: Só conexões permitidas (tests/allowed-hosts.txt)
         run: tests/check-network.py firefox/firefox 120 --also-allow aus5.mozilla.org
 
+  # Os mesmos testes no Windows (o lançador e o encerramento de processos são diferentes lá).
+  runtime-windows:
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: bash
+    env:
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Baixar Firefox ESR
+        run: |
+          command -v python3 > /dev/null || { python3() { python "$@"; }; export -f python3; }
+          source scripts/common.sh
+          v="$(resolve_version)"
+          curl -fL --retry 3 -o setup.exe "$ARCHIVE/$v/win64/en-US/Firefox%20Setup%20$v.exe"
+          7z x -y -offx setup.exe > /dev/null
+      - run: scripts/apply-config.sh ffx/core
+      - run: python tests/check-runtime.py ffx/core/firefox.exe
+      - name: Extensões de fábrica instalam
+        run: python tests/check-extensions.py ffx/core/firefox.exe
+      - name: Só conexões permitidas (tests/allowed-hosts.txt)
+        run: python tests/check-network.py ffx/core/firefox.exe 120 --also-allow aus5.mozilla.org
+
   # Baixa o código-fonte atual e confere que branding, prefs, patches e os ajustes do
   # Android ainda se aplicam (sem compilar).
   prepare:
