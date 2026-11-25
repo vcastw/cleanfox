@@ -34,6 +34,10 @@ case "$TARGET" in
     listing="$(tar -tf "$pkg")"
     grep -qx 'coldfox/distribution/policies.json' <<< "$listing" \
       || die "o pacote não contém distribution/policies.json (patch 0001 não aplicado?)"
+    ! grep -qx 'coldfox/pingsender' <<< "$listing" \
+      || die "o pacote contém o pingsender (patch 0002 não aplicado?)"
+    tar -xOf "$pkg" coldfox/application.ini | grep -qx 'Vendor=ColdFox' \
+      || die "application.ini não diz Vendor=ColdFox (MOZ_APP_VENDOR no mozconfig)"
     collect "$pkg" "coldfox-$VERSION-linux-$ARCH.tar.${pkg##*.}"
     ;;
   windows)

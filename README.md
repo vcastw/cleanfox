@@ -85,7 +85,9 @@ gh attestation verify coldfox-<arquivo> -R vcastw/coldfox
 
 **Atualizações** — não há atualizador automático. Assine os releases do repositório
 (**Watch → Custom → Releases**) e instale a versão nova por cima quando sair; ela traz as
-correções de segurança do Firefox.
+correções de segurança do Firefox. Todo dia o workflow **Versão nova do Firefox** confere
+se a Mozilla publicou uma versão mais nova que a do último release e, se sim, abre uma issue
+(ou, com a variável `AUTO_RELEASE=true` no repositório, já dispara o release).
 
 ## Como funciona
 
@@ -137,8 +139,8 @@ ele é um conjunto pequeno e auditável de arquivos aplicado sobre o código-fon
   obrigatória de extensões e o sandbox RLBox das bibliotecas de terceiros.
 
 **Mais leve**
-- Fora da compilação: telemetria, crash reporter, atualizador, controle parental e a
-  varredura de redes Wi-Fi; no Windows, também o serviço de manutenção e o agente de
+- Fora da compilação: telemetria (inclusive o programa `pingsender`), crash reporter,
+  atualizador, controle parental e a varredura de redes Wi-Fi; no Windows, também o serviço de manutenção e o agente de
   navegador padrão.
 - Desligados: pré-carregamento da nova aba, miniaturas de páginas, clima e "buscas em alta"
   na barra de endereço, botão "Informar problema no site", ofertas do Relay/Lockwise e
@@ -314,11 +316,11 @@ Feito e verificado:
 Pendente:
 - [ ] Android: debranding dos textos restantes (sincronização, traduções) e ícones alternativos;
   teste em aparelho real
-- [ ] `application.ini` ainda diz `Vendor=Mozilla`; `pingsender` ainda é empacotado (sem uso, telemetria desligada)
 - [ ] Ícones secundários do Windows/macOS (documento, navegação privativa, instalador) ainda são os genéricos "unofficial"
 - [ ] Patch para remover Normandy e Health Report da compilação (hoje desligados por pref travada)
 - [ ] Assinatura de código no Windows e no macOS (dependem de certificado; veja [Assinatura](#assinatura))
-- [ ] Releases automáticos a cada versão do Firefox e aviso de atualização
+- [x] Conferência diária de versão nova do Firefox (issue de aviso ou release automático)
+- [ ] Aviso de atualização dentro do navegador
 - [ ] Linux arm64, macOS Intel, Flatpak/AppImage
 - [ ] Medições de desempenho e memória publicadas contra o Firefox padrão
 

@@ -66,3 +66,22 @@ if command -v keytool >/dev/null; then
   ! COLDFOX_SEM_GH=1 "$ROOT/tools/gerar-chave-android.sh" "$tmp/chave" >/dev/null 2>&1 || fail "sobrescreveu uma chave existente"
   echo "ok: gerar-chave-android.sh"
 fi
+
+# Detecção de versão nova do Firefox.
+cat > "$tmp/atuais.json" <<'J'
+{"FIREFOX_ESR": "153.9.0esr", "LATEST_FIREFOX_VERSION": "161.0"}
+J
+nova() { "$ROOT/scripts/versao-nova.py" "$1" "$tmp/notas.md" "$tmp/atuais.json"; }
+out="$(nova v0.2)" # notas de 153.8.0 e 161.0 (geradas acima)
+grep -qx 'nova=true' <<< "$out" || fail "não viu o ESR novo"
+grep -qx 'tag=v0.3' <<< "$out" || fail "próxima tag errada: $out"
+grep -q 'desktop 153.8.0 → 153.9.0' <<< "$out" || fail "resumo errado: $out"
+grep -q 'Android' <<< "$out" && fail "Android sem mudança apareceu no resumo"
+sed -i 's/153.9.0esr/153.8.0esr/' "$tmp/atuais.json"
+grep -qx 'nova=false' <<< "$(nova v0.2)" || fail "acusou versão nova sem ter"
+sed -i 's/"161.0"/"161.0.1"/' "$tmp/atuais.json"
+grep -qx 'nova=true' <<< "$(nova v0.2)" || fail "não viu o Android novo"
+echo x > "$tmp/notas.md"
+grep -qx 'nova=true' <<< "$(nova v1.9)" || fail "notas sem tabela deveriam contar como desatualizado"
+grep -qx 'tag=v1.10' <<< "$(nova v1.9)" || fail "próxima tag de v1.9 deveria ser v1.10"
+echo "ok: versao-nova.py"

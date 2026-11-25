@@ -1,0 +1,61 @@
+name: Versão nova do Firefox
+
+# Todo dia confere se a Mozilla publicou um Firefox ESR (desktop) ou estável (Android)
+# mais novo que o do último release. Sem um atualizador automático, um release atrasado é
+# o maior risco de segurança do ColdFox (SECURITY.md).
+#   * Padrão: abre uma issue avisando (quem mantém dispara o release).
+#   * Com a variável do repositório AUTO_RELEASE=true: dispara o Build com a próxima tag.
+on:
+  schedule:
+    - cron: "43 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  conferir:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      issues: write
+      actions: write # disparar o build.yml (só com AUTO_RELEASE=true)
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # O release mais recente, mesmo que marcado como pré-lançamento (rascunhos não).
+          tag="$(gh release list --repo "$GITHUB_REPOSITORY" --exclude-drafts --limit 1 --json tagName --jq '.[0].tagName // "v0.0"')"
+          if [ "$tag" = v0.0 ]; then : > notas.md
+          else gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json body --jq .body > notas.md; fi
+          curl -fsSL --retry 3 https://product-details.mozilla.org/1.0/firefox_versions.json > atuais.json
+          scripts/versao-nova.py "$tag" notas.md atuais.json | tee -a "$GITHUB_OUTPUT"
+      - name: Avisar ou disparar o release
+        if: steps.v.outputs.nova == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUTO_RELEASE: ${{ vars.AUTO_RELEASE }}
+          TAG: ${{ steps.v.outputs.tag }}
+          RESUMO: ${{ steps.v.outputs.resumo }}
+        run: |
+          repo="$GITHUB_REPOSITORY"
+          if [ -n "$(gh run list --repo "$repo" --workflow build.yml --status in_progress --json databaseId --jq '.[]')" ] \
+             || [ -n "$(gh run list --repo "$repo" --workflow build.yml --status queued --json databaseId --jq '.[]')" ]; then
+            echo "Já há um Build rodando; confere de novo amanhã."; exit 0
+          fi
+          if [ "$AUTO_RELEASE" = true ]; then
+            gh workflow run build.yml --repo "$repo" --ref main -f release_tag="$TAG"
+            echo "Build disparado: $TAG ($RESUMO)" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          titulo="Versão nova do Firefox: publicar $TAG"
+          if gh issue list --repo "$repo" --state open --search "in:title \"$titulo\"" --json number --jq '.[0].number' | grep -q .; then
+            echo "Issue já aberta."; exit 0
+          fi
+          gh issue create --repo "$repo" --title "$titulo" --body "$RESUMO.
+
+          Para publicar: Actions → Build → Run workflow (main) com \`release_tag\` = \`$TAG\`.
+          Para isso acontecer sozinho, crie a variável do repositório \`AUTO_RELEASE\` = \`true\`
+          (Settings → Secrets and variables → Actions → Variables)."

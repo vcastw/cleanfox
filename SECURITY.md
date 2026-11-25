@@ -20,11 +20,16 @@ build, CI e releases.
 | Conexões em segundo plano | Só hosts listados, com motivo, em `tests/allowed-hosts.txt`. | `tests/check-network.py` registra toda conexão de um perfil novo parado por 2 min e falha com host desconhecido. Roda no CI. |
 | Extensões de fábrica | uBlock Origin, Privacy Badger e Decentraleyes da AMO, com assinatura da Mozilla obrigatória; usuário pode removê-las. | `tests/check-extensions.py` confere instaladas, ativas, assinadas e liberadas em janela privativa. |
 | Fixação de certificados | Modo estrito (`security.cert_pinning.enforcement_level = 2`): domínios da Mozilla recusam até CAs instaladas manualmente. | `tests/check-runtime.py` (valor da pref). Comprovado na prática: um proxy que intercepta TLS não consegue se passar por `addons.mozilla.org`. |
+| Atraso nas correções de segurança | `.github/workflows/versao-nova.yml` confere todo dia a versão do Firefox do último release contra a da Mozilla e abre issue (ou dispara o release, com `AUTO_RELEASE=true`). | `tests/test-release.sh` cobre a comparação de versões e a próxima tag. |
+| Binários a menos | `pingsender` (envio de telemetria ao fechar) fora da compilação (`patches/0002`); `application.ini` com `Vendor=ColdFox`. | `scripts/package.sh` recusa o pacote Linux com `pingsender` ou outro Vendor (`tests/test-package.sh`). |
 
 ## Lacunas conhecidas
 
 - **Sem atualizador automático.** O maior risco: o ColdFox só recebe correções de
-  segurança quando um release novo é publicado e instalado.
+  segurança quando um release novo é publicado e instalado. O aviso diário de versão nova
+  encurta o atraso do lado do projeto, mas o usuário ainda precisa instalar por conta própria.
+  Com `AUTO_RELEASE=true`, um release sai sem revisão humana (os controles do código-fonte
+  e do CI continuam valendo).
 - **Google Safe Browsing desligado.** Menos proteção contra phishing e malware; as listas
   do uBlock Origin cobrem só parte.
 - **Downloads da Mozilla dependem da Mozilla.** A chave em `keys/` é a raiz de confiança:

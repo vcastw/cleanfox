@@ -1,0 +1,47 @@
+Não compila nem empacota o pingsender.
+
+O pingsender é um executável à parte que só envia pings de telemetria quando o navegador
+fecha. O ColdFox compila sem envio de telemetria (sem MOZILLA_OFFICIAL) e com as prefs de
+telemetria travadas em false, então o programa nunca roda: só ocupa espaço na instalação
+e seria um binário a menos para um atacante aproveitar. Se o código o chamasse mesmo assim,
+TelemetrySend.sys.mjs já trata a ausência do arquivo como erro de envio (sem travar).
+
+diff -ru a/browser/app/macbuild/Contents/MacOS-files.in b/browser/app/macbuild/Contents/MacOS-files.in
+--- a/browser/app/macbuild/Contents/MacOS-files.in
++++ b/browser/app/macbuild/Contents/MacOS-files.in
+@@ -17,7 +17,6 @@
+ /crashhelper
+ #endif
+ /nmhproxy
+-/pingsender
+ /pk12util
+ /ssltunnel
+ /xpcshell
+diff -ru a/browser/installer/package-manifest.in b/browser/installer/package-manifest.in
+--- a/browser/installer/package-manifest.in
++++ b/browser/installer/package-manifest.in
+@@ -414,10 +414,6 @@
+ @BINPATH@/crashhelper@BIN_SUFFIX@
+ #endif
+ 
+-; [ Ping Sender ]
+-;
+-@BINPATH@/pingsender@BIN_SUFFIX@
+-
+ ; [ Native Messaging Host Proxy ]
+ ;
+ #if defined(XP_WIN) || defined(XP_MACOSX)
+diff -ru a/toolkit/components/telemetry/moz.build b/toolkit/components/telemetry/moz.build
+--- a/toolkit/components/telemetry/moz.build
++++ b/toolkit/components/telemetry/moz.build
+@@ -6,10 +6,6 @@
+ 
+ FINAL_LIBRARY = "xul"
+ 
+-DIRS = [
+-    "pingsender",
+-]
+-
+ DEFINES["MOZ_APP_VERSION"] = '"%s"' % CONFIG["MOZ_APP_VERSION"]
+ 
+ LOCAL_INCLUDES += [
