@@ -54,3 +54,15 @@ echo lixo > "$tmp/ruim.tar.xz"
 ! HOME="$tmp/home" COLDFOX_PREFIX="$tmp/home/opt" "$ROOT/scripts/install-linux.sh" "$tmp/ruim.tar.xz" >/dev/null 2>&1 || fail "aceitou pacote inválido"
 [ "$("$tmp/home/.local/bin/coldfox")" = coldfox-falso ] || fail "pacote inválido apagou a instalação existente"
 echo "ok: install-linux.sh"
+
+# Gerador da chave do Android: cria um keystore que abre com a senha gravada e não sobrescreve.
+if command -v keytool >/dev/null; then
+  COLDFOX_SEM_GH=1 "$ROOT/tools/gerar-chave-android.sh" "$tmp/chave" >/dev/null
+  COLDFOX_KS_PASS="$(cat "$tmp/chave/senha.txt")" keytool -list -keystore "$tmp/chave/coldfox-release.jks" \
+    -storepass:env COLDFOX_KS_PASS -alias coldfox >/dev/null 2>&1 || fail "keystore não abre com a senha gravada"
+  base64 -d < "$tmp/chave/keystore-base64.txt" | cmp -s - "$tmp/chave/coldfox-release.jks" || fail "base64 do keystore não confere"
+  grep -qE '^([0-9A-F]{2}:){31}[0-9A-F]{2}$' "$tmp/chave/impressao-digital-sha256.txt" || fail "impressão digital ausente"
+  [ "$(stat -c %a "$tmp/chave/senha.txt")" = 600 ] || fail "senha legível por outros usuários"
+  ! COLDFOX_SEM_GH=1 "$ROOT/tools/gerar-chave-android.sh" "$tmp/chave" >/dev/null 2>&1 || fail "sobrescreveu uma chave existente"
+  echo "ok: gerar-chave-android.sh"
+fi

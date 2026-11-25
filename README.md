@@ -61,8 +61,7 @@ Manual: `tar -xf coldfox-linux-x86_64.tar.xz` e depois `./coldfox/coldfox`, em q
 
 **Android** — abra o `.apk` no aparelho e permita a instalação de fonte desconhecida. Os
 outros `.apk` do release são para aparelhos antigos de 32 bits (`armeabi-v7a`) e emuladores
-(`x86_64`). Enquanto o projeto não tiver uma chave de assinatura fixa (veja
-[Notas por plataforma](#notas-por-plataforma)), cada versão nova exige desinstalar a anterior.
+(`x86_64`). Versões novas instalam por cima: todo release é assinado com a mesma chave.
 
 **Conferir o download** (recomendado): o release traz um `SHA256SUMS` e cada arquivo tem um
 atestado de que foi compilado pelo workflow deste repositório.
@@ -255,10 +254,34 @@ e cada um falha a compilação se o código da Mozilla mudar, em vez de passar p
 - As prefs de `settings/coldfox.js` entram no GeckoView; `policies.json` não existe no Android.
 - Nome, ID (`io.github.coldfox`), ícone e wordmarks são do ColdFox. Ainda restam textos
   "Firefox" em telas secundárias (sincronização, traduções) e nos ícones alternativos.
-- Para que atualizações instalem por cima, o APK precisa ser sempre assinado com a mesma
-  chave. Crie um keystore e cadastre os secrets `ANDROID_KEYSTORE_B64`,
-  `ANDROID_KEYSTORE_PASSWORD` e `ANDROID_KEY_ALIAS` no repositório; sem eles o CI gera um
-  APK com chave de debug descartável.
+- O APK de todo release é assinado com a chave do projeto; sem ela o release não sai
+  (veja [Assinatura](#assinatura)).
+
+## Assinatura
+
+| Plataforma | Estado | O que falta |
+|---|---|---|
+| Android | **Assinado com a chave do projeto.** O release é recusado sem a chave ou com chave de debug. | Só a configuração inicial, uma vez (abaixo). |
+| Windows | Sem assinatura: o SmartScreen avisa "aplicativo não reconhecido". | Um certificado de assinatura de código, emitido por uma autoridade certificadora. Para projeto de código aberto há o programa gratuito da [SignPath Foundation](https://signpath.org/) (depende de aprovação); os pagos custam a partir de algumas dezenas de dólares por ano. |
+| macOS | Sem assinatura nem notarização: exige o comando `xattr` de [Instalar](#instalar). | Conta do Apple Developer Program (US$ 99 por ano); não existe alternativa gratuita. |
+| Linux | Não se aplica (não há assinatura de sistema para `.tar.xz`). | — |
+
+Em todas as plataformas, cada arquivo de release tem um atestado de procedência (Sigstore)
+que prova que ele saiu do workflow deste repositório — veja [Instalar](#instalar).
+
+**Chave do Android (uma vez, por quem mantém o projeto)** — num computador com Java e o
+`gh` autenticado:
+
+```bash
+tools/gerar-chave-android.sh
+```
+
+Cria o keystore em `~/coldfox-chave-android` e cadastra os secrets `ANDROID_KEYSTORE_B64`,
+`ANDROID_KEYSTORE_PASSWORD` e `ANDROID_KEY_ALIAS` no ambiente `release` do repositório (sem
+o `gh`, mostra o que colar em Settings > Environments). **Guarde essa pasta em lugar seguro e
+fora do git:** quem tem a chave publica atualizações em nome do ColdFox, e quem a perde
+nunca mais atualiza o app já instalado. A impressão digital do certificado aparece no resumo
+do job `android-sign` de cada release.
 
 ## Testes
 
@@ -285,6 +308,7 @@ Feito e verificado:
 - [x] Download do código-fonte recusa assinatura inválida ou de outra chave (testado)
 - [x] **As quatro plataformas compilam no GitHub Actions** (Linux, macOS, Windows, Android);
   em Linux, macOS e Windows o binário é testado (prefs, extensões, rede) antes de publicar
+- [x] APK de release sempre assinado com a chave do projeto (sem ela o release não sai)
 - [x] Releases com links de download fixos, `SHA256SUMS` e atestado de procedência
 
 Pendente:
@@ -293,7 +317,7 @@ Pendente:
 - [ ] `application.ini` ainda diz `Vendor=Mozilla`; `pingsender` ainda é empacotado (sem uso, telemetria desligada)
 - [ ] Ícones secundários do Windows/macOS (documento, navegação privativa, instalador) ainda são os genéricos "unofficial"
 - [ ] Patch para remover Normandy e Health Report da compilação (hoje desligados por pref travada)
-- [ ] Assinatura de código (Windows, macOS) e chave de release do Android
+- [ ] Assinatura de código no Windows e no macOS (dependem de certificado; veja [Assinatura](#assinatura))
 - [ ] Releases automáticos a cada versão do Firefox e aviso de atualização
 - [ ] Linux arm64, macOS Intel, Flatpak/AppImage
 - [ ] Medições de desempenho e memória publicadas contra o Firefox padrão

@@ -40,7 +40,7 @@ echo "== mozconfig: sintaxe shell"
 bash -n mozconfig
 
 echo "== shellcheck"
-shellcheck -x scripts/*.sh tests/*.sh
+shellcheck -x scripts/*.sh tests/*.sh tools/*.sh
 
 echo "== Python dos testes: sintaxe"
 python3 -m py_compile tests/*.py tools/*.py
@@ -53,6 +53,12 @@ grep -q 'pattern: coldfox-\*' .github/workflows/build.yml \
 if grep -nE 'name: coldfox-.*unsigned' .github/workflows/build.yml; then
   echo "ERRO: artefato não assinado com nome que casa com coldfox-*"; exit 1
 fi
+
+# Release sem a chave do Android não sai (falha fechado), e o job de release depende disso.
+grep -q 'needs: \[release-check, ' .github/workflows/build.yml \
+  || { echo "ERRO: o job de release precisa depender de release-check"; exit 1; }
+grep -q "Android Debug" .github/workflows/build.yml \
+  || { echo "ERRO: android-sign precisa reprovar chave de debug em release"; exit 1; }
 
 # Entradas do disparo manual só por variável de ambiente, nunca dentro de um `run:`
 # (texto interpolado no shell vira injeção de comando).
