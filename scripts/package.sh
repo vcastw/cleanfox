@@ -37,7 +37,7 @@ case "$TARGET" in
     ! grep -qx 'coldfox/pingsender' <<< "$listing" \
       || die "o pacote contém o pingsender (patch 0002 não aplicado?)"
     tar -xOf "$pkg" coldfox/application.ini | grep -qx 'Vendor=ColdFox' \
-      || die "application.ini não diz Vendor=ColdFox (MOZ_APP_VENDOR no mozconfig)"
+      || die "application.ini não diz Vendor=ColdFox (patch 0003 não aplicado?)"
     collect "$pkg" "coldfox-$VERSION-linux-$ARCH.tar.${pkg##*.}"
     ;;
   windows)

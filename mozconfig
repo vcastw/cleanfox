@@ -52,9 +52,8 @@ case "$COLDFOX_TARGET" in
     ac_add_options --with-app-basename=ColdFox
     ac_add_options --with-branding=browser/branding/coldfox
     ac_add_options --with-distribution-id=io.github.coldfox
-    # "Vendor" do application.ini: decide a pasta do perfil e as chaves de registro do
-    # Windows (%APPDATA%\ColdFox, não %APPDATA%\Mozilla) e o nome em "Sobre".
-    ac_add_options MOZ_APP_VENDOR=ColdFox
+    # Vendor=ColdFox (pasta do perfil, registro do Windows) vem de patches/0003: o
+    # configure não aceita MOZ_APP_VENDOR pelo mozconfig.
 
     # Sem atualizador da Mozilla: atualizações vêm dos releases do ColdFox.
     ac_add_options --disable-updater

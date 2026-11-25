@@ -21,7 +21,7 @@ build, CI e releases.
 | Extensões de fábrica | uBlock Origin, Privacy Badger e Decentraleyes da AMO, com assinatura da Mozilla obrigatória; usuário pode removê-las. | `tests/check-extensions.py` confere instaladas, ativas, assinadas e liberadas em janela privativa. |
 | Fixação de certificados | Modo estrito (`security.cert_pinning.enforcement_level = 2`): domínios da Mozilla recusam até CAs instaladas manualmente. | `tests/check-runtime.py` (valor da pref). Comprovado na prática: um proxy que intercepta TLS não consegue se passar por `addons.mozilla.org`. |
 | Atraso nas correções de segurança | `.github/workflows/versao-nova.yml` confere todo dia a versão do Firefox do último release contra a da Mozilla e abre issue (ou dispara o release, com `AUTO_RELEASE=true`). | `tests/test-release.sh` cobre a comparação de versões e a próxima tag. |
-| Binários a menos | `pingsender` (envio de telemetria ao fechar) fora da compilação (`patches/0002`); `application.ini` com `Vendor=ColdFox`. | `scripts/package.sh` recusa o pacote Linux com `pingsender` ou outro Vendor (`tests/test-package.sh`). |
+| Binários a menos | `pingsender` (envio de telemetria ao fechar) fora da compilação (`patches/0002`); `application.ini` com `Vendor=ColdFox` (`patches/0003`). | `scripts/package.sh` recusa o pacote Linux com `pingsender` ou outro Vendor (`tests/test-package.sh`). |
 
 ## Lacunas conhecidas
 
